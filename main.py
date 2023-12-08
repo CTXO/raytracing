@@ -1,23 +1,21 @@
-from __future__ import annotations
-import cv2
-import numpy as np
-import numpy.typing as npt
 from scene import Camera, Screen
 from objects import Sphere, Plane, Triangle
-from structures import Point
 import colors
+from structures import Point
+from structures import Vector
 
-c = Camera((0,0,0), (0,0,1), (0,1,0), Screen())
-sphere1 = Sphere((0, 0, 8), 1, (0,0,1))
-sphere2 = Sphere((0, 0, 12), 3, (1,0,0))
-plane = Plane((0,2.9, 0), (0, 1, 0), (0, 1, 0))
+c = Camera((0,0,0), (0,0,0.5), (0,1,0), Screen())
+sphere1 = Sphere(Point((0, 0, 8)), 1, colors.RED)
+sphere2 = Sphere(Point((0, 0, 12)), 3, colors.BLUE)
+sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE)
+plane = Plane(Point((0, 2.9, 0)), Vector((0, 1, 0)), colors.GREEN)
 
 p1 = Point((0, 1, 3))
-p2 = Point((0.5, 0 , 3))
-p3 = Point((-0.5, 0 , 3))
+p2 = Point((0.5, 0, 3))
+p3 = Point((-0.5, 0, 3))
 
 triangle = Triangle((p3, p2, p1), colors.RED)
-objs = [triangle]
+objs = [triangle, sphere3]
 c.render(objs) 
 
 # def main():

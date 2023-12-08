@@ -117,7 +117,7 @@ class Camera:
                 min_t = float('inf')
                 chosen_obj = None
                 for obj in objs:
-                    t = obj.intersect(ray)
+                    t = obj.intersect(ray).get('t')
                     if t and t < min_t:
                         min_t = t
                         chosen_obj = obj

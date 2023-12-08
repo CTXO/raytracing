@@ -1,17 +1,28 @@
 from __future__ import annotations
+
+from abc import ABC
+from abc import abstractmethod
 from typing import List, Tuple
 from structures import Vector, Point
 from scene import Ray
 
 import numpy as np
+import numpy.typing as npt
 
-class Sphere:
-    def __init__(self, center: [float], radius: int, color: [float]):
-        self.center = Point(center)
+
+class ScreenObject(ABC):
+    @abstractmethod
+    def intersect(self, ray: Ray) -> dict:
+        pass
+
+
+class Sphere(ScreenObject):
+    def __init__(self, center: Point, radius: int, color: npt.ArrayLike):
+        self.center = center
         self.radius = radius
-        self.color = np.array(color)
+        self.color = color
 
-    def intersect(self, ray: Ray):
+    def intersect(self, ray: Ray) -> dict:
         oc = Vector.from_points(self.center, ray.origin)
         a = Vector.dot(ray.direction, ray.direction)
         b = Vector.dot(oc, ray.direction) * 2.0
@@ -21,28 +32,33 @@ class Sphere:
         if discriminant > 0:
             t1 = (-b - np.sqrt(discriminant)) / (2.0 * a)
             t2 = (-b + np.sqrt(discriminant)) / (2.0 * a)
-            return min(t1, t2)
+            return {'t': min(t1, t2)}
         else:
-            return None
-        
-class Plane:
-    def __init__(self, point: [float], normal: [float], color: [float]):
-        self.point = Point(point)
-        self.normal = Vector(normal).normalize()
-        self.color = np.array(color)
+            return {}
 
-    def intersect(self, ray: Ray):
+
+class Plane(ScreenObject):
+    def __init__(self, point: Point, normal: Vector, color: npt.ArrayLike):
+        self.point = point
+        self.normal = normal.normalize()
+        self.color = color
+
+    def intersect(self, ray: Ray) -> dict:
         denom = Vector.dot(ray.direction, self.normal)
         if abs(denom) > 1e-6:  
             v = Vector.from_points(ray.origin, self.point)
             t = Vector.dot(v, self.normal) / denom
-            return t if t > 0 else None
+
+            if t <= 0:
+                return {}
+            else:
+                return {'t': t}
         else:
-            return None
+            return {}
 
 
-class Triangle:
-    def __init__(self, points: Tuple[Point, Point, Point], color: Tuple(float, float, float), 
+class Triangle(ScreenObject):
+    def __init__(self, points: Tuple[Point, Point, Point], color: npt.ArrayLike,
                  normal: Vector = None):
         self.points = points
         self.color = np.array(color)
@@ -58,9 +74,9 @@ class Triangle:
     def area(self):
         return self.raw_normal.magnitude() / 2
     
-    def intersect(self, ray: Ray):
-        triangle_plane = Plane(self.points[0].p, self.normal.v, self.color) # Make plane and other objects accept Vector instead of [float]
-        plane_intersect_t = triangle_plane.intersect(ray)
+    def intersect(self, ray: Ray) -> dict:
+        triangle_plane = Plane(self.points[0], self.normal, self.color)  # Make plane and other objects accept Vector instead of [float]
+        plane_intersect_t = triangle_plane.intersect(ray).get('t')
         if not plane_intersect_t or plane_intersect_t < 0:
             return None
         
@@ -80,12 +96,11 @@ class Triangle:
         gamma = at3 / at
         
         if abs(alpha + beta + gamma - 1) > 1e-6:
-            return
+            return {}
         if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1:
-            return plane_intersect_t
+            return {"t": plane_intersect_t, "normal": self.normal, "color": self.color}
 
-        
-        
+
 class TMesh:
     def __init__(self, triangle_count: int, vertex_count: int, vertices: List[Point],
                   vertices_indexes: List[Tuple[int, int, int]], colors: List[Tuple[float, float, float]],
