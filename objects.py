@@ -79,6 +79,8 @@ class Triangle:
         beta = at2 / at
         gamma = at3 / at
         
+        if abs(alpha + beta + gamma - 1) > 1e-6:
+            return
         if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1:
             return plane_intersect_t
 
