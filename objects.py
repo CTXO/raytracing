@@ -73,7 +73,7 @@ class Triangle(ScreenObject):
 
     def area(self):
         return self.raw_normal.magnitude() / 2
-    
+
     def intersect(self, ray: Ray) -> dict:
         triangle_plane = Plane(self.points[0], self.normal, self.color)  # Make plane and other objects accept Vector instead of [float]
         plane_intersect_t = triangle_plane.intersect(ray).get('t')
@@ -100,6 +100,13 @@ class Triangle(ScreenObject):
         if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1:
             return {"t": plane_intersect_t, "normal": self.normal, "color": self.color}
 
+    def __str__(self):
+        return f"""
+        p1: {self.points[0]}
+        p2: {self.points[1]}
+        p3: {self.points[2]}
+        """
+
 
 class TMesh:
     def __init__(self, triangle_count: int, vertex_count: int, vertices: List[Point],
@@ -119,10 +126,17 @@ class TMesh:
         if len(colors) != self.triangle_count:
             raise(f"Expected {self.triangle_count} colors. Found {len(colors)} instead.")
         self.colors = colors
-        
+
+        self.triangles = []
         if triangle_normals is None:
-            # Todo
-            pass
+            for t_i in range(triangle_count):
+                indexes = vertices_indexes[t_i]
+                points = [self.vertices[indexes[0]], self.vertices[indexes[1]], self.vertices[indexes[2]]]
+                triangle = Triangle(points)
+                self.triangles.append(triangle)
+
+
+
         elif len(triangle_normals) != self.triangle_count:
             raise(f"Expected {self.triangle_count} triangle_normals. Found {len(triangle_normals)} instead.")
         self.triangle_normals = triangle_normals

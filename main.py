@@ -4,7 +4,11 @@ import colors
 from structures import Point
 from structures import Vector
 
-c = Camera((0,0,0), (0,0,0.5), (0,1,0), Screen())
+origin_point = Point((0,0,0))
+target_point = Point((0, 0, 0.5))
+up_vector = Vector((0,1,0))
+c = Camera(origin_point, target_point, up_vector, Screen())
+
 sphere1 = Sphere(Point((0, 0, 8)), 1, colors.RED)
 sphere2 = Sphere(Point((0, 0, 12)), 3, colors.BLUE)
 sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE)
@@ -16,7 +20,7 @@ p3 = Point((-0.5, 0, 3))
 
 triangle = Triangle((p3, p2, p1), colors.RED)
 objs = [triangle, sphere3]
-c.render(objs) 
+c.render(objs)
 
 # def main():
 #     po_input = input("Digite as coordenadas do ponto de origem separado por espaços: ").split(" ")

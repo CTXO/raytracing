@@ -20,18 +20,14 @@ class Screen:
     
 
 class Camera:
-    def __init__(self, initial_p: [float], target_p: [float], up_input_v: [float], scene: Screen):
-        up_input_v = np.array(up_input_v)
-        self.initial_p = np.array(initial_p)
-        self.target_p = np.array(target_p)
-        
-        self.initial_p = Point(initial_p)
-        self.target_p = Point(target_p)
+    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen):
+        self.initial_p = initial_p
+        self.target_p = target_p
         
         self.front_v = Vector.from_points(initial_p=self.initial_p, final_p=self.target_p)
         self.distance = self.front_v.magnitude()
         
-        up_v_temp = Vector(up_input_v)
+        up_v_temp = up_input_v
         self.right_v = Vector.cross(self.front_v, up_v_temp)
         self.up_v = Vector.cross(self.right_v, self.front_v)
         self.right_v = self.right_v.normalize()

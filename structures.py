@@ -6,11 +6,15 @@ class Point:
     def __init__(self, p) -> None:
         self.p = np.array(p)
 
+    def __str__(self):
+        return f"Point({self.p[0], self.p[1], self.p[2]})"
+
     def add_vector(self, v: Vector) -> Point:
         return Point(self.p + v.v)
     
     def get_coordinates(self) -> [float]:
         return [self.p[0], self.p[1], self.p[2]]
+
 
 class Vector:
     def __init__(self, v: [float] = None, v_np: npt.NDArray = None) -> None:
@@ -20,7 +24,10 @@ class Vector:
             self.v = v_np
         else:
             raise ValueError("v or v_np is missing")
-        
+
+    def __str__(self):
+        return f"Vector({self.v[0], self.v[1], self.v[2]})"
+
     @staticmethod
     def cross(v1: Vector, v2: Vector) -> Vector:
         return Vector(np.cross(v1.v, v2.v))
@@ -58,8 +65,3 @@ class Vector:
 
     def __neg__(self) -> Vector:
         return Vector(self.v * -1)
-    
-    
-    
-    
-    
