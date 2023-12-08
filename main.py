@@ -3,13 +3,21 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 from scene import Camera, Screen
-from objects import Sphere, Plane
+from objects import Sphere, Plane, Triangle
+from structures import Point
+import colors
 
-c = Camera((0,7,8), (0,6,8), (1,0,0), Screen())
+c = Camera((0,0,0), (0,0,1), (0,1,0), Screen())
 sphere1 = Sphere((0, 0, 8), 1, (0,0,1))
 sphere2 = Sphere((0, 0, 12), 3, (1,0,0))
 plane = Plane((0,2.9, 0), (0, 1, 0), (0, 1, 0))
-objs = [sphere1, sphere2, plane]
+
+p1 = Point((0, 1, 3))
+p2 = Point((0.5, 0 , 3))
+p3 = Point((-0.5, 0 , 3))
+
+triangle = Triangle((p3, p2, p1), colors.RED)
+objs = [triangle]
 c.render(objs) 
 
 # def main():
