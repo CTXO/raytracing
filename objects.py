@@ -82,7 +82,7 @@ class Triangle(ScreenObject):
                                self.color)  # Make plane and other objects accept Vector instead of [float]
         plane_intersect_t = triangle_plane.intersect(ray).get('t')
         if not plane_intersect_t or plane_intersect_t < 0:
-            return None
+            return {}
 
         point_intersect = ray.origin.add_vector(ray.direction * plane_intersect_t)
 
@@ -94,7 +94,6 @@ class Triangle(ScreenObject):
         at2 = t2.area()
         at3 = t3.area()
         at = self.area()
-
 
         alpha = at1 / at
         beta = at2 / at
