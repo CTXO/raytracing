@@ -38,6 +38,9 @@ class Vector:
         return Vector(v_np=vector_np)
 
     def normalize(self) -> Vector:
+        magnitude = self.magnitude()
+        if magnitude == 0:
+            raise Exception("magnitude cannot be zero")
         return Vector(self.v / self.magnitude())
 
     def magnitude(self) -> int:

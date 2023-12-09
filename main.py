@@ -1,3 +1,4 @@
+from objects import TMesh
 from scene import Camera, Screen
 from objects import Sphere, Plane, Triangle
 import colors
@@ -18,8 +19,26 @@ p1 = Point((0, 1, 3))
 p2 = Point((0.5, 0, 3))
 p3 = Point((-0.5, 0, 3))
 
+vertices = [
+    Point((1, 0, 5)),
+    Point((0, 1, 5)),
+    Point((-1, 0, 5)),
+    Point((-.5, -1, 5)),
+    Point((.5, -1, 5))
+]
+
+vertices_indexes = [
+    (0, 1, 4),
+    (2, 3, 4),
+    (1, 2, 4),
+]
+tmesh = TMesh(triangle_count=3, vertex_count=5, vertices=vertices, vertices_indexes=vertices_indexes,
+              colors=[colors.RED, colors.GREEN, colors.BLUE])
+for t in tmesh.triangles:
+    print(t)
+
 triangle = Triangle((p3, p2, p1), colors.RED)
-objs = [triangle, sphere3]
+objs = [tmesh]
 c.render(objs)
 
 # def main():
