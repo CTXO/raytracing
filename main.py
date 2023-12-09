@@ -19,7 +19,7 @@ p1 = Point((0, 1, 3))
 p2 = Point((0.5, 0, 3))
 p3 = Point((-0.5, 0, 3))
 
-vertices = [
+vertices_pentagon= [
     Point((1, 0, 5)),
     Point((0, 1, 5)),
     Point((-1, 0, 5)),
@@ -27,18 +27,45 @@ vertices = [
     Point((.5, -1, 5))
 ]
 
-vertices_indexes = [
+vertices_indexes_pentagon = [
     (0, 1, 4),
     (2, 3, 4),
     (1, 2, 4),
 ]
-tmesh = TMesh(triangle_count=3, vertex_count=5, vertices=vertices, vertices_indexes=vertices_indexes,
+pentagon = TMesh(triangle_count=3, vertex_count=5, vertices=vertices_pentagon, vertices_indexes=vertices_indexes_pentagon,
               colors=[colors.RED, colors.GREEN, colors.BLUE])
-for t in tmesh.triangles:
-    print(t)
+
+
+vertices_star = [
+    Point((0, 3, 5)),
+    Point((-4, 1, 5)),
+    Point((-3, -3, 5)),
+    Point((3, -3, 5)),
+    Point((4, 1, 5)),
+    Point((1, 1, 5)),
+    Point((2, -1, 5)),
+    Point((0, -2, 5)),
+    Point((-2, -1, 5)),
+    Point((-1, 1, 5)),
+]
+
+indexes_star = [
+    (0, 5, 9),
+    (4, 5, 6),
+    (1, 8, 9),
+    (2, 7, 8),
+    (3, 6, 7),
+    (5, 6, 7),
+    (7, 8, 9),
+    (5, 7, 9),
+]
+
+star = TMesh(triangle_count=8, vertex_count=10, vertices=vertices_star, vertices_indexes=indexes_star,
+             colors=[colors.BLUE] * 8)
+
 
 triangle = Triangle((p3, p2, p1), colors.RED)
-objs = [tmesh]
+objs = [star]
 c.render(objs)
 
 # def main():
