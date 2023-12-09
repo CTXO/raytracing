@@ -140,10 +140,10 @@ class Camera:
             go_left = not go_left
             print(f'Progress: {counter / total_iterations * 100}%')
 
-            end_time = time.time()
+        end_time = time.time()
 
-            time_difference = end_time - start_time
-            print(f"Rendered in {time_difference :2f} seconds")
+        time_difference = end_time - start_time
+        print(f"Rendered in {time_difference :2f} seconds")
 
         if save_file:
             np.save(save_file, self.s.real_grid)
