@@ -1,72 +1,14 @@
-from objects import TMesh
+from examples import *
 from scene import Camera, Screen
-from objects import Sphere, Plane, Triangle
-import colors
 from structures import Point
 from structures import Vector
 
-origin_point = Point((0,0,0))
+origin_point = Point((0, 0, 0))
 target_point = Point((0, 0, 0.5))
 up_vector = Vector((0,1,0))
 c = Camera(origin_point, target_point, up_vector, Screen())
 
-sphere1 = Sphere(Point((0, 0, 8)), 1, colors.RED)
-sphere2 = Sphere(Point((0, 0, 12)), 3, colors.BLUE)
-sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE)
-plane = Plane(Point((0, 2.9, 0)), Vector((0, 1, 0)), colors.GREEN)
-
-p1 = Point((0, 1, 3))
-p2 = Point((0.5, 0, 3))
-p3 = Point((-0.5, 0, 3))
-
-vertices_pentagon= [
-    Point((1, 0, 5)),
-    Point((0, 1, 5)),
-    Point((-1, 0, 5)),
-    Point((-.5, -1, 5)),
-    Point((.5, -1, 5))
-]
-
-vertices_indexes_pentagon = [
-    (0, 1, 4),
-    (2, 3, 4),
-    (1, 2, 4),
-]
-pentagon = TMesh(triangle_count=3, vertex_count=5, vertices=vertices_pentagon, vertices_indexes=vertices_indexes_pentagon,
-              colors=[colors.RED, colors.GREEN, colors.BLUE])
-
-
-vertices_star = [
-    Point((0, 3, 5)),
-    Point((-4, 1, 5)),
-    Point((-3, -3, 5)),
-    Point((3, -3, 5)),
-    Point((4, 1, 5)),
-    Point((1, 1, 5)),
-    Point((2, -1, 5)),
-    Point((0, -2, 5)),
-    Point((-2, -1, 5)),
-    Point((-1, 1, 5)),
-]
-
-indexes_star = [
-    (0, 5, 9),
-    (4, 5, 6),
-    (1, 8, 9),
-    (2, 7, 8),
-    (3, 6, 7),
-    (5, 6, 7),
-    (7, 8, 9),
-    (5, 7, 9),
-]
-
-star = TMesh(triangle_count=8, vertex_count=10, vertices=vertices_star, vertices_indexes=indexes_star,
-             colors=[colors.BLUE] * 8)
-
-
-triangle = Triangle((p3, p2, p1), colors.RED)
-objs = [star]
-c.render(objs)
+c.render_from_file(load_file='sphere.npy')
 
 # def main():
 #     po_input = input("Digite as coordenadas do ponto de origem separado por espaços: ").split(" ")
