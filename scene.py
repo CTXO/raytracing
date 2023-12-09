@@ -1,3 +1,5 @@
+import time
+
 from structures import Vector, Point
 import numpy as np
 import cv2
@@ -77,8 +79,8 @@ class Camera:
     def set_position(self, pos):
         self.current_spot = pos
 
-    
     def render(self, objs):
+        start_time = time.time()
         next_pos = self.go_horizontal(units=-1)
         while next_pos is not False:
             self.set_position(next_pos)
@@ -92,10 +94,11 @@ class Camera:
             
         go_left = False
         p_v = self.s.v_res - 1
-        p_h = 0
+        total_iterations = self.s.h_res * self.s.v_res
+        counter = 0
         
         next_pos_v = self.current_spot
-        while (next_pos_v is not False):
+        while next_pos_v is not False:
             self.set_position(next_pos_v)
             if go_left:
                 units = -1
@@ -104,7 +107,7 @@ class Camera:
                 units = 1
                 p_h = 0
             next_pos_h = self.current_spot
-            while (next_pos_h is not False):
+            while next_pos_h is not False:
                 self.set_position(next_pos_h)
                 
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
@@ -113,15 +116,17 @@ class Camera:
                 min_t = float('inf')
                 chosen_obj = None
                 for obj in objs:
-                    t = obj.intersect(ray).get('t')
+                    intersect = obj.intersect(ray)
+                    t = intersect.get('t')
                     if t and t < min_t:
                         min_t = t
                         chosen_obj = obj
-                
+                        chosen_intersect = intersect
+
                 if chosen_obj:
-                    color = chosen_obj.color
+                    color = chosen_intersect.get('color')
                 else:
-                    color = np.array([0,0,0]) # black
+                    color = np.array([0,0,0])  # black
                 
                 self.s.draw_pixel(p_h, p_v, color * 255)
                 next_pos_h = self.go_horizontal(units=units)
@@ -129,12 +134,17 @@ class Camera:
                     p_h -= 1
                 else:
                     p_h += 1
+                counter += 1
             next_pos_v = self.go_vertical(1)
             p_v -= 1
             go_left = not go_left
+            print(f'Progress: {counter / total_iterations * 100}%')
             
+        end_time = time.time()
 
-        cv2.imshow("Grid", self.s.real_grid)
+        time_difference = end_time - start_time
+        print(f"Rendered in {time_difference :2f} seconds")
+        cv2.imshow("Ray casting", self.s.real_grid)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         
