@@ -79,24 +79,24 @@ class Camera:
     def set_position(self, pos):
         self.current_spot = pos
 
-    def render(self, objs):
+    def render(self, objs, save_file=None):
         start_time = time.time()
         next_pos = self.go_horizontal(units=-1)
         while next_pos is not False:
             self.set_position(next_pos)
             next_pos = self.go_horizontal(units=-1)
-        
-        
+
+
         next_pos = self.go_vertical(units=-1)
         while next_pos is not False:
             self.set_position(next_pos)
             next_pos = self.go_vertical(units=-1)
-            
+
         go_left = False
         p_v = self.s.v_res - 1
         total_iterations = self.s.h_res * self.s.v_res
         counter = 0
-        
+
         next_pos_v = self.current_spot
         while next_pos_v is not False:
             self.set_position(next_pos_v)
@@ -109,10 +109,10 @@ class Camera:
             next_pos_h = self.current_spot
             while next_pos_h is not False:
                 self.set_position(next_pos_h)
-                
+
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
-                
+
                 min_t = float('inf')
                 chosen_obj = None
                 for obj in objs:
@@ -127,7 +127,7 @@ class Camera:
                     color = chosen_intersect.get('color')
                 else:
                     color = np.array([0,0,0])  # black
-                
+
                 self.s.draw_pixel(p_h, p_v, color * 255)
                 next_pos_h = self.go_horizontal(units=units)
                 if go_left:
@@ -139,15 +139,26 @@ class Camera:
             p_v -= 1
             go_left = not go_left
             print(f'Progress: {counter / total_iterations * 100}%')
-            
-        end_time = time.time()
 
-        time_difference = end_time - start_time
-        print(f"Rendered in {time_difference :2f} seconds")
-        cv2.imshow("Ray casting", self.s.real_grid)
+            end_time = time.time()
+
+            time_difference = end_time - start_time
+            print(f"Rendered in {time_difference :2f} seconds")
+
+        if save_file:
+            np.save(save_file, self.s.real_grid)
+
+        self.render_grid()
+
+    def render_from_file(self, load_file):
+        self.s.real_grid = np.load(load_file)
+        self.render_grid()
+
+    def render_grid(self):
+        cv2.imshow("Ray tracing", self.s.real_grid)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        
+
     def __str__(self):
         s = f"""
                 initial_p: {self.initial_p}
