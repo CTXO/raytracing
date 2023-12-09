@@ -6,16 +6,16 @@ from objects import Triangle
 from structures import Point
 from structures import Vector
 
+def sphere():
+    sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE)
+    return [sphere3]
+
+
 def spheres_and_plane():
     sphere1 = Sphere(Point((0, 0, 8)), 1, colors.RED)
     sphere2 = Sphere(Point((0, 0, 12)), 3, colors.BLUE)
     plane = Plane(Point((0, 1, 0)), Vector((0, 1, 0)), colors.GREEN)
     return [sphere1, sphere2, plane]
-
-
-def sphere():
-    sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE)
-    return [sphere3]
 
 
 def triangle():
@@ -95,6 +95,10 @@ def face():
     mouth = TMesh(triangle_count=2, vertex_count=4, vertices=vertices_mouth, vertices_indexes=vertices_index_mouth,
                   colors=[colors.GREEN]*2)
 
+    return [head, left_eye, right_eye, mouth]
+
+
+def angry_face():
     vertices_l_brow = [
         Point((1, 2.3, 10)),
         Point((0.1, 2.8, 10)),
@@ -106,7 +110,6 @@ def face():
         (1, 3, 0),
         (1, 3, 2)
     ]
-
 
     l_brow = TMesh(triangle_count=2, vertex_count=4, vertices=vertices_l_brow, vertices_indexes=vertices_index_l_brow,
                    colors=[colors.BLUE]*2)
@@ -124,11 +127,12 @@ def face():
         (1, 3, 2)
     ]
 
-
     r_brow = TMesh(triangle_count=2, vertex_count=4, vertices=vertices_r_brow, vertices_indexes=vertices_index_r_brow,
                    colors=[colors.BLUE]*2)
+    angry_face = face()
+    angry_face.extend([r_brow, l_brow])
+    return angry_face
 
-    return [head, left_eye, right_eye, mouth, l_brow, r_brow]
 
 
 

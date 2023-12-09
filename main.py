@@ -1,4 +1,4 @@
-from examples import *
+from examples.examples import *
 from scene import Camera, Screen
 from structures import Point
 from structures import Vector
@@ -8,7 +8,8 @@ target_point = Point((0, 0, 0.5))
 up_vector = Vector((0,1,0))
 c = Camera(origin_point, target_point, up_vector, Screen())
 
-c.render_from_file(load_file='sphere.npy')
+
+c.render_from_file('./examples/angry_face.npy')
 
 # def main():
 #     po_input = input("Digite as coordenadas do ponto de origem separado por espaços: ").split(" ")
