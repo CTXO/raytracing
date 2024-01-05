@@ -134,6 +134,35 @@ def angry_face():
     return angry_face
 
 
+def pyramid():
+    p0 = Point((100, 0, 0))
+    p1 = Point((0, 100, 0))
+    p2 = Point((-100, 0, 0))
+    p3 = Point((0, -100, 0))
+    p4 = Point((0, 0, 100))
+
+    t_count = 4
+
+    vertices = [p0, p1, p2, p3, p4]
+
+    indexes = [
+        (0, 1, 4),
+        (1, 2, 4),
+        (2, 3, 4),
+        (3, 0, 4)
+    ]
+
+    color_list = [
+        colors.RED,
+        colors.GREEN,
+        colors.BLUE,
+        colors.GREEN
+    ]
+
+    t_mesh = TMesh(triangle_count=t_count, vertex_count=5, vertices=vertices, vertices_indexes=indexes, colors=color_list)
+    return [t_mesh]
+
+
 
 
 
