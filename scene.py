@@ -41,29 +41,9 @@ class Camera:
         up_displacement = self.up_v * (self.s.pixel_size_v/2)
         self.current_spot = self.target_p.add_vector(up_displacement).add_vector(right_displacement)
         
-        self.grid_bound_tr = self.target_p.add_vector(self.up_v).add_vector(self.right_v)
-        self.grid_bound_bl = self.target_p.add_vector(-self.up_v).add_vector(-self.right_v)    
-
-    def valid_position(self, pos: Point) -> bool:
-        x_right, y_top, z_top = self.grid_bound_tr.p 
-        x_left, y_bottom, z_bottom = self.grid_bound_bl.p
-        
-        x,y,z = pos.get_coordinates()
-        if x > max(x_right, x_left) or x < min(x_right, x_left):
-            return False
-        if y > max(y_top, y_bottom) or y < min(y_top, y_bottom):
-            return False
-        if z > max(z_top, z_bottom) or z < min(z_top, z_bottom):
-            return False
-        
-        return True
-    
     def go_horizontal(self, units=1) -> Point:
         hor_displacement = self.right_v * 2 / self.s.h_res * units
         next_spot = self.current_spot.add_vector(hor_displacement) 
-
-        if not self.valid_position(next_spot):
-            return False
 
         return next_spot
     
@@ -71,9 +51,6 @@ class Camera:
         ver_displacement = self.up_v * 2 / self.s.v_res * units
         next_spot = self.current_spot.add_vector(ver_displacement)
         
-        if not self.valid_position(next_spot):
-            return False
-
         return next_spot
 
     def set_position(self, pos):
@@ -81,35 +58,28 @@ class Camera:
 
     def render(self, objs, save_file=None):
         start_time = time.time()
-        next_pos = self.go_horizontal(units=-1)
-        while next_pos is not False:
-            self.set_position(next_pos)
-            next_pos = self.go_horizontal(units=-1)
 
+        full_left_iter = -self.s.h_res // 2
+        next_pos = self.go_horizontal(units=full_left_iter)
+        self.set_position(next_pos)
 
-        next_pos = self.go_vertical(units=-1)
-        while next_pos is not False:
-            self.set_position(next_pos)
-            next_pos = self.go_vertical(units=-1)
+        full_down_iter = -self.s.v_res // 2
+        next_pos = self.go_vertical(units=full_down_iter)
+        self.set_position(next_pos)
 
         go_left = False
         p_v = self.s.v_res - 1
         total_iterations = self.s.h_res * self.s.v_res
         counter = 0
 
-        next_pos_v = self.current_spot
-        while next_pos_v is not False:
-            self.set_position(next_pos_v)
+        for i in range(self.s.v_res):
             if go_left:
                 units = -1
                 p_h = self.s.h_res - 1
             else:
                 units = 1
                 p_h = 0
-            next_pos_h = self.current_spot
-            while next_pos_h is not False:
-                self.set_position(next_pos_h)
-
+            for j in range(self.s.h_res):
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
 
@@ -129,16 +99,20 @@ class Camera:
                     color = np.array([0,0,0])  # black
 
                 self.s.draw_pixel(p_h, p_v, color * 255)
-                next_pos_h = self.go_horizontal(units=units)
-                if go_left:
-                    p_h -= 1
-                else:
-                    p_h += 1
+                last_h = j == self.s.h_res - 1
+                if not last_h:
+                    self.set_position(self.go_horizontal(units=units))
+                    if go_left:
+                        p_h -= 1
+                    else:
+                        p_h += 1
                 counter += 1
-            next_pos_v = self.go_vertical(1)
+            self.set_position(self.go_vertical(1))
             p_v -= 1
             go_left = not go_left
-            print(f'Progress: {counter / total_iterations * 100}%')
+            progress = counter / total_iterations * 100
+            if progress % 5 == 0:
+                print(f'Progress: {counter / total_iterations * 100:.2f}%')
 
         end_time = time.time()
 
