@@ -13,7 +13,7 @@ import numpy.typing as npt
 class ScreenObject(ABC):
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
-        pass
+        raise NotImplementedError
 
 
 class Sphere(ScreenObject):
