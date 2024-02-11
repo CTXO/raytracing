@@ -9,14 +9,15 @@ from scene import Ray
 import numpy as np
 import numpy.typing as npt
 
+from transformations import Transformation
+
 
 class ScreenObject(ABC):
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
         raise NotImplementedError
     
-    @abstractmethod
-    def transform():
+    def transform(self, transf: Transformation) -> ScreenObject:
         raise NotImplementedError
 
 
@@ -39,6 +40,12 @@ class Sphere(ScreenObject):
             return {'t': min(t1, t2), 'color': self.color}
         else:
             return {}
+    
+    def transform(self, transf: Transformation) -> ScreenObject:
+        transformed_point = transf.matrix @ np.append(self.center.p, 1)
+        transformed_point = transformed_point[:-1]
+        self.center = Point(transformed_point)
+        return self
 
 
 class Plane(ScreenObject):
