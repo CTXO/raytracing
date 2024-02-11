@@ -137,6 +137,9 @@ class Triangle(ScreenObject):
 
 
 class TMesh(ScreenObject):
+    triangles: List[Triangle]
+    triangle_normals: List[Vector]
+
     def __init__(self, triangle_count: int, vertex_count: int, vertices: List[Point],
                  vertices_indexes: List[Tuple[int, int, int]], colors: List[npt.ArrayLike],
                  triangle_normals: List[Vector] = None, vertices_normals: List[Vector] = None):
@@ -190,3 +193,26 @@ class TMesh(ScreenObject):
             return intersect_triangle
 
         return {}
+    
+
+    def transform(self, transf: Transformation) -> ScreenObject:
+        transformed_triangles = []
+        for triangle in self.triangles:
+            transformed_triangles.append(triangle.transform(transf))
+        
+        self.triangles = transformed_triangles
+        
+        if self.triangle_normals:
+            tranformed_normals = []
+            for normal in self.triangle_normals:
+                tranformed_normals.append(transf.transform_vector(normal))
+            
+            self.triangle_normals = tranformed_normals
+        
+        if self.vertices_normals:
+            transformed_vertices_normals = []
+            for vertice_normal in self.vertices_normals:
+                transformed_vertices_normals.append(transf.transform_vector(vertice_normal))
+            self.vertices_normals = transformed_vertices_normals
+        return self
+            

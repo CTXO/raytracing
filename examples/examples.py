@@ -51,7 +51,9 @@ def pentagon():
     ]
     pentagon_ret = TMesh(triangle_count=3, vertex_count=5, vertices=vertices_pentagon, vertices_indexes=vertices_indexes_pentagon,
                   colors=[colors.RED, colors.GREEN, colors.BLUE])
-    return [pentagon_ret]
+    rotationZ = RotationZ(180)
+    translation = Translation(2,0,0)
+    return [pentagon_ret.transform(rotationZ).transform(translation)]
 
 
 def star():
@@ -81,7 +83,7 @@ def star():
 
     star_ret = TMesh(triangle_count=8, vertex_count=10, vertices=vertices_star, vertices_indexes=indexes_star,
                  colors=[colors.BLUE] * 8)
-    return [star_ret]
+    return [star_ret.transform(RotationZ(45))]
 
 
 def face():
