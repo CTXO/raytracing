@@ -31,6 +31,29 @@ class Translation(Transformation):
         self.validate_matrix()
 
 
+class RotationX(Transformation):
+    def __init__(self, angle) -> None:
+        sin, cos = self.get_sin_cos(angle)
+        self.matrix = np.array([
+            [1, 0, 0, 0],
+            [0, cos, -sin, 0],
+            [0, sin, cos, 0],
+            [0, 0, 0, 1]
+        ])
+        self.validate_matrix()
+        
+
+class RotationY(Transformation):
+    def __init__(self, angle) -> None:
+        sin, cos = self.get_sin_cos(angle)
+        self.matrix = np.array([
+            [cos, 0, sin, 0],
+            [0, 1, 0, 0],
+            [-sin, 0, cos, 0],
+            [0, 0, 0, 1]
+        ])
+        self.validate_matrix()
+        
 
 class RotationZ(Transformation):
     def __init__(self, angle) -> None:
