@@ -118,6 +118,14 @@ class Triangle(ScreenObject):
         if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1:
             return {"t": plane_intersect_t, "normal": self.normal, "color": self.color}
         return {}
+    
+    def transform(self, transf: Transformation) -> ScreenObject:
+        transformed_points = []
+        for p in self.points:
+            transformed_points.append(transf.transform_point(p))
+        self.points = transformed_points
+        self.normal = transf.transform_vector(self.normal)
+        return self
 
     def __str__(self):
         return f"""
@@ -182,5 +190,3 @@ class TMesh(ScreenObject):
             return intersect_triangle
 
         return {}
-
-

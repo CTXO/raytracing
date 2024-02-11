@@ -29,8 +29,10 @@ def triangle():
     p1 = Point((0, 1, 3))
     p2 = Point((0.5, 0, 3))
     p3 = Point((-0.5, 0, 3))
+    translation = Translation(1,0, 0)
+    rotationZ = RotationZ(45)
     triangle_ret = Triangle((p3, p2, p1), colors.RED)
-    return [triangle_ret]
+    return [triangle_ret.transform(translation).transform(rotationZ)]
 
 
 def pentagon():

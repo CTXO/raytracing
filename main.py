@@ -9,7 +9,7 @@ origin_point = Point((0, 0, 0))
 target_point = Point((0, 0, 0.5))
 up_vector = Vector((0,1,0))
 c1 = Camera(origin_point, target_point, up_vector, Screen())
-c1.render(sphere())
+c1.render(triangle())
 
 
 # More realistic camera
