@@ -65,6 +65,11 @@ class Plane(ScreenObject):
                 return {'t': t, 'color': self.color}
         else:
             return {}
+        
+    def transform(self, transf: Transformation) -> ScreenObject:
+        self.normal = transf.transform_vector(self.normal)
+        self.point = transf.transform_point(self.point)
+        return self
     
 class Triangle(ScreenObject):
     def __init__(self, points: Tuple[Point, Point, Point], color: npt.ArrayLike,

@@ -20,7 +20,9 @@ def spheres_and_plane():
     sphere1 = Sphere(Point((0, 0, 8)), 1, colors.RED)
     sphere2 = Sphere(Point((0, 0, 12)), 3, colors.BLUE)
     plane = Plane(Point((0, 1, 0)), Vector((0, 1, 0)), colors.GREEN)
-    return [sphere1, sphere2, plane]
+    translation = Translation(2 ,0, 0)
+    rotationZ = RotationZ(90)
+    return [sphere1, sphere2, plane.transform(rotationZ).transform(translation)]
 
 
 def triangle():
