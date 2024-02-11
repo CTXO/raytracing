@@ -5,9 +5,10 @@ from objects import TMesh
 from objects import Triangle
 from structures import Point
 from structures import Vector
+from transformations import Transalation
 
 def sphere():
-    sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE)
+    sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE).transform(Transalation(0,3,0))
     return [sphere3]
 
 
