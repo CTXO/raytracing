@@ -38,11 +38,6 @@ class Transformation(ABC):
         return Vector(vector_array_transformed)
         
         
-
-        
-
-
-
 class Translation(Transformation):
     def __init__(self, x, y, z) -> None:
         self.matrix = np.array([
@@ -52,6 +47,10 @@ class Translation(Transformation):
             [0, 0, 0, 1]
         ])
         self.validate_matrix()
+    
+    # Translation doesn't alter the normal vector of objects
+    def transform_vector(self, vector: Vector) -> Vector:
+        return vector
 
 
 class RotationX(Transformation):
