@@ -5,12 +5,14 @@ from objects import TMesh
 from objects import Triangle
 from structures import Point
 from structures import Vector
-from transformations import RotationZ, Translation
+from transformations import RotationX, RotationY, RotationZ, Translation
 
 def sphere():
     translation = Translation(-1.5,2,0)
     rotationZ = RotationZ(180)
-    sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE).transform(translation).transform(rotationZ)
+    rotationY = RotationY(-45)
+    rotationX = RotationX(-45)
+    sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE).transform(translation)
     return [sphere3]
 
 

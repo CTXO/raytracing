@@ -3,6 +3,8 @@ import math
 import numpy as np
 import numpy.typing as npt
 
+from structures import Point, Vector
+
 class Transformation(ABC):
     matrix: npt.ArrayLike
     
@@ -18,6 +20,27 @@ class Transformation(ABC):
         expected_last_row = np.array([0, 0, 0, 1])
         if not np.array_equal(last_row_of_matrix, expected_last_row):
             raise ValueError(f"Matrix should have {expected_last_row} as last row, but it has {last_row_of_matrix} instead. Matrix:\n{self.matrix}")
+    
+    def transform_np_array(self, np_array: npt.ArrayLike) -> npt.ArrayLike:
+        if np_array.shape != (3,):
+            return ValueError(f"Np array should have 3 coordinates points, it has shape {np_array.shape} instead. Array:\n{np_array}")
+        np_array_4d = np.append(np_array, 1)
+        transformed_array = self.matrix @ np_array_4d
+        transformed_array_3d = transformed_array[:-1]
+        return transformed_array_3d
+    
+    def transform_point(self, point: Point) -> Point:
+        point_array_transformed = self.transform_np_array(point.p)
+        return Point(point_array_transformed)
+    
+    def transform_vector(self, vector: Vector) -> Vector:
+        vector_array_transformed = self.transform_np_array(vector.v)
+        return Vector(vector_array_transformed)
+        
+        
+
+        
+
 
 
 class Translation(Transformation):

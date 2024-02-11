@@ -17,6 +17,7 @@ class ScreenObject(ABC):
     def intersect(self, ray: Ray) -> dict:
         raise NotImplementedError
     
+    @abstractmethod
     def transform(self, transf: Transformation) -> ScreenObject:
         raise NotImplementedError
 
@@ -42,9 +43,7 @@ class Sphere(ScreenObject):
             return {}
     
     def transform(self, transf: Transformation) -> ScreenObject:
-        transformed_point = transf.matrix @ np.append(self.center.p, 1)
-        transformed_point = transformed_point[:-1]
-        self.center = Point(transformed_point)
+        self.center = transf.transform_point(self.center)
         return self
 
 
@@ -66,8 +65,7 @@ class Plane(ScreenObject):
                 return {'t': t, 'color': self.color}
         else:
             return {}
-
-
+    
 class Triangle(ScreenObject):
     def __init__(self, points: Tuple[Point, Point, Point], color: npt.ArrayLike,
                  normal: Vector = None):
