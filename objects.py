@@ -14,6 +14,10 @@ class ScreenObject(ABC):
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
         raise NotImplementedError
+    
+    @abstractmethod
+    def transform():
+        raise NotImplementedError
 
 
 class Sphere(ScreenObject):
