@@ -1,5 +1,5 @@
 from examples.examples import *
-from scene import Camera, Screen
+from scene import Camera, Light, Screen
 from structures import Point
 from structures import Vector
 
@@ -8,8 +8,11 @@ from structures import Vector
 origin_point = Point((0, 0, 0))
 target_point = Point((0, 0, 0.5))
 up_vector = Vector((0,1,0))
-c1 = Camera(origin_point, target_point, up_vector, Screen())
-c1.render(star())
+l = Light(Point([0,3,3]), [255,255,255])
+
+
+c1 = Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
+c1.render(sphere())
 
 
 # More realistic camera

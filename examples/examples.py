@@ -8,11 +8,12 @@ from structures import Vector
 from transformations import RotationX, RotationY, RotationZ, Translation
 
 def sphere():
-    translation = Translation(-1.5,2,0)
+    translation = Translation(-1.5,0,0)
     rotationZ = RotationZ(180)
     rotationY = RotationY(-45)
     rotationX = RotationX(-45)
     sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE).transform(translation)
+    sphere3.set_coefficients(k_diffusion=0.3, k_ambient=0.2)
     return [sphere3]
 
 
@@ -20,7 +21,7 @@ def spheres_and_plane():
     sphere1 = Sphere(Point((0, 0, 8)), 1, colors.RED)
     sphere2 = Sphere(Point((0, 0, 12)), 3, colors.BLUE)
     plane = Plane(Point((0, 1, 0)), Vector((0, 1, 0)), colors.GREEN)
-    translation = Translation(2 ,0, 0)
+    translation = Translation(2, 0, 0)
     rotationZ = RotationZ(90)
     return [sphere1, sphere2, plane.transform(rotationZ).transform(translation)]
 

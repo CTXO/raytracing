@@ -13,11 +13,12 @@ from transformations import Transformation
 
 
 class ScreenObject(ABC):
-    k_difusion: float = 0 
+    k_diffusion: float = 0
     k_specular: float = 0
     k_ambient: float = 0
     k_reflection: float = 0
     shininess: float = 0
+    color: npt.ArrayLike
 
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
@@ -27,19 +28,25 @@ class ScreenObject(ABC):
     def transform(self, transf: Transformation) -> ScreenObject:
         raise NotImplementedError
     
+    @abstractmethod
+    def normal_of(self, point: Point) -> Vector:
+        raise NotImplemented
+    
     @staticmethod
     def validate_coefficient(coefficient, min_value=0, max_value=1):
         if min_value and coefficient < min_value:
             return min_value
         if max_value and coefficient > max_value:
             return max_value
+        return coefficient
     
     def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, shininess=0):
-        self.k_difusion = self.validate_coefficient(k_diffusion)
+        self.k_diffusion = self.validate_coefficient(k_diffusion)
         self.k_specular = self.validate_coefficient(k_specular)
         self.k_ambient = self.validate_coefficient(k_ambient)
         self.k_reflection = self.validate_coefficient(k_reflection)
         self.shininess = self.validate_coefficient(shininess)
+        return self
 
 
 class Sphere(ScreenObject):
@@ -58,14 +65,20 @@ class Sphere(ScreenObject):
         if discriminant > 0:
             t1 = (-b - np.sqrt(discriminant)) / (2.0 * a)
             t2 = (-b + np.sqrt(discriminant)) / (2.0 * a)
-            return {'t': min(t1, t2), 'color': self.color}
+            t = min(t1, t2)
+            vector = ray.direction * t
+            intersect_point = ray.origin.add_vector(vector)
+            return {'t': t, 'color': self.color, 'point': intersect_point}
         else:
             return {}
     
     def transform(self, transf: Transformation) -> ScreenObject:
         self.center = transf.transform_point(self.center)
         return self
-
+    
+    def normal_of(self, point: Point) -> Vector:
+        return Vector.from_points(self.center, point)
+    
 
 class Plane(ScreenObject):
     def __init__(self, point: Point, normal: Vector, color: npt.ArrayLike):

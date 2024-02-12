@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 from structures import Vector, Point
 import numpy as np
@@ -14,15 +15,23 @@ class Screen:
     
     real_pixel_size_h = screen_size // h_res
     real_pixel_size_v = screen_size // v_res
-
+    
     real_grid = np.zeros((screen_size, screen_size, 3), dtype=np.uint8)
+    
     
     def draw_pixel(self, x, y, rgb):
         self.real_grid[y*self.real_pixel_size_v: (y+1)*self.real_pixel_size_v, x*self.real_pixel_size_h: (x+1)*self.real_pixel_size_h] = rgb
     
-
+class Light:
+    def __init__(self, point: Point, color: List[int]):
+        self.point = point
+        self.color = np.array(color)
+    
+    
 class Camera:
-    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen):
+    ambient_light = np.array([255,255,255])
+    
+    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light]):
         self.initial_p = initial_p
         self.target_p = target_p
         
@@ -41,6 +50,8 @@ class Camera:
         up_displacement = self.up_v * (self.s.pixel_size_v/2)
         self.current_spot = self.target_p.add_vector(up_displacement).add_vector(right_displacement)
         
+        self.lights = lights
+        
     def go_horizontal(self, units=1) -> Point:
         hor_displacement = self.right_v * 2 / self.s.h_res * units
         next_spot = self.current_spot.add_vector(hor_displacement) 
@@ -55,6 +66,18 @@ class Camera:
 
     def set_position(self, pos):
         self.current_spot = pos
+        
+    def calculate_color(self, obj, intersect_point: Point):
+        partial_result = np.array([0,0,0])
+        for light in self.lights:
+            light_vector = Vector.from_points(intersect_point, light.point)
+            r = light.color * obj.color * obj.k_diffusion * Vector.dot(obj.normal_of(intersect_point), light_vector)
+            partial_result = partial_result + r
+            
+        result = obj.k_ambient * self.ambient_light + partial_result
+        # Handle color overflow
+
+        return result
 
     def render(self, objs, save_file=None):
         start_time = time.time()
@@ -94,11 +117,13 @@ class Camera:
                         chosen_intersect = intersect
 
                 if chosen_obj:
-                    color = chosen_intersect.get('color')
+                    point = chosen_intersect.get('point')
+                    color = self.calculate_color(chosen_obj, point)
+                    # color = chosen_intersect.get('color')
                 else:
                     color = np.array([0,0,0])  # black
 
-                self.s.draw_pixel(p_h, p_v, color * 255)
+                self.s.draw_pixel(p_h, p_v, color)
                 last_h = j == self.s.h_res - 1
                 if not last_h:
                     self.set_position(self.go_horizontal(units=units))
@@ -148,3 +173,4 @@ class Ray:
     def __init__(self, origin: Point, direction: Vector):
         self.origin = origin
         self.direction = direction.normalize()
+
