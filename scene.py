@@ -71,12 +71,12 @@ class Camera:
         partial_result = np.array([0,0,0])
         for light in self.lights:
             light_vector = Vector.from_points(intersect_point, light.point)
-            r = light.color * obj.color * obj.k_diffusion * Vector.dot(obj.normal_of(intersect_point), light_vector)
+            cos = Vector.dot(obj.normal_of(intersect_point).normalize(), light_vector.normalize())
+            r = light.color * obj.color * obj.k_diffusion * max(cos, 0)
             partial_result = partial_result + r
-            
-        result = obj.k_ambient * self.ambient_light + partial_result
-        # Handle color overflow
 
+        result = obj.k_ambient * self.ambient_light + partial_result
+        result = np.clip(result, 0, 255)
         return result
 
     def render(self, objs, save_file=None):
