@@ -13,6 +13,12 @@ from transformations import Transformation
 
 
 class ScreenObject(ABC):
+    k_difusion: float = 0 
+    k_specular: float = 0
+    k_ambient: float = 0
+    k_reflection: float = 0
+    shininess: float = 0
+
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
         raise NotImplementedError
@@ -20,6 +26,20 @@ class ScreenObject(ABC):
     @abstractmethod
     def transform(self, transf: Transformation) -> ScreenObject:
         raise NotImplementedError
+    
+    @staticmethod
+    def validate_coefficient(coefficient, min_value=0, max_value=1):
+        if min_value and coefficient < min_value:
+            return min_value
+        if max_value and coefficient > max_value:
+            return max_value
+    
+    def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, shininess=0):
+        self.k_difusion = self.validate_coefficient(k_diffusion)
+        self.k_specular = self.validate_coefficient(k_specular)
+        self.k_ambient = self.validate_coefficient(k_ambient)
+        self.k_reflection = self.validate_coefficient(k_reflection)
+        self.shininess = self.validate_coefficient(shininess)
 
 
 class Sphere(ScreenObject):
