@@ -11,28 +11,27 @@ from structures import Vector
 from transformations import RotationX, RotationY, RotationZ, Translation
 
 
-def camera1() -> Camera:
-    origin_point = Point((0, 0, 0))
-    target_point = Point((0, 0, 0.5))
-    up_vector = Vector((0, 1, 0))
-    l = Light(Point([0, 1, 1]), [255, 255, 255])
+points_close = {
+    'origin_point': Point((0, 0, 0)),
+    'target_point': Point((0, 0, 0.5)),
+    'up_vector': Vector((0, 1, 0)),
+}
+points_close_diagonal = {
+    'origin_point': Point((0, 4, 0)),
+    'target_point': Point((0, 3.5, 0.5)),
+    'up_vector': Vector((0, 1, 0)),
+}
+points_realistic = {
+    'origin_point': Point((-300, 300, 300)),
+    'target_point': Point((-299, 299, 299)),
+    'up_vector': Point((0, 100, 0)),
+}
 
-    return Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
+point_above_circle = Point((0, 3, 3))
+point_diagonal_to_circle = Point((0, 1, 1))
 
-def camera1_diagonal() -> Camera:
-    origin_point = Point((0, 4, 0))
-    target_point = Point((0, 3.5, 0.5))
-    up_vector = Vector((0, 1, 0))
-    l = Light(Point([0, 3, 3]), [255, 255, 255])
-
-    return Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
-
-
-def camera2() -> Camera:
-    initial_p = Point((-300, 300, 300))
-    target_p = Point((-299, 299, 299))
-    normal = Vector((0, 100, 0))
-    return Camera(initial_p=initial_p, target_p=target_p, up_input_v=normal, scene=Screen())
+def get_camera(origin_point=None, target_point=None, up_vector=None, lights=None):
+    return Camera(origin_point, target_point, up_vector, Screen(), lights=lights)
 
 
 def sphere():
@@ -41,10 +40,8 @@ def sphere():
     rotationY = RotationY(-45)
     rotationX = RotationX(-45)
     sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE).transform(translation)
-    sphere3.set_coefficients(k_diffusion=1, k_ambient=0.1)
-    c = camera1()
-    c_diagonal = camera1_diagonal()
-    c_diagonal.render([sphere3])
+    sphere3.set_coefficients(k_diffusion=1, k_ambient=0, k_specular=0.6, shininess=10000)
+    c = get_camera(**points_close_diagonal, lights=[Light(point_diagonal_to_circle)])
     c.render([sphere3])
 
 
@@ -52,9 +49,24 @@ def spheres_and_plane():
     sphere1 = Sphere(Point((0, 0, 8)), 1, colors.RED)
     sphere2 = Sphere(Point((0, 0, 12)), 3, colors.BLUE)
     plane = Plane(Point((0, 1, 0)), Vector((0, 1, 0)), colors.GREEN)
+
+    params = {
+        'k_diffusion': 1,
+        'k_ambient': 0.1,
+        'k_specular': 0.4,
+        'shininess': 10
+    }
+    sphere1.set_coefficients(**params)
+    sphere2.set_coefficients(**params)
+    plane.set_coefficients(**params)
+
+    point_above_plane = Point([0,4,0])
+    point_bellow_plane = Point([4, -2, 6])
+    c = get_camera(**points_close, lights=[Light(point_bellow_plane)])
     translation = Translation(2, 0, 0)
     rotationZ = RotationZ(90)
-    return [sphere1, sphere2, plane.transform(rotationZ).transform(translation)]
+    objs = [sphere1, sphere2, plane]
+    c.render(objs)
 
 
 def triangle():

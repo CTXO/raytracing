@@ -21,9 +21,12 @@ class Screen:
     
     def draw_pixel(self, x, y, rgb):
         self.real_grid[y*self.real_pixel_size_v: (y+1)*self.real_pixel_size_v, x*self.real_pixel_size_h: (x+1)*self.real_pixel_size_h] = rgb
-    
+
+
 class Light:
-    def __init__(self, point: Point, color: List[int]):
+    def __init__(self, point: Point, color: List[int] = None):
+        if color is None:
+            color = [255, 255, 255]
         self.point = point
         self.color = np.array(color)
     
@@ -73,6 +76,8 @@ class Camera:
             light_vector = Vector.from_points(intersect_point, light.point)
             obj_normal = obj.normal_of(intersect_point).normalize()
             cos_lv_normal = Vector.dot(obj_normal, light_vector.normalize())
+            if obj.normal_always_positive:
+                cos_lv_normal = abs(cos_lv_normal)
             diffusion = light.color * obj.color * obj.k_diffusion * max(cos_lv_normal, 0)
 
             camera_vector = Vector.from_points(intersect_point, self.initial_p)

@@ -19,6 +19,7 @@ class ScreenObject(ABC):
     k_reflection: float = 0
     shininess: float = 0
     color: npt.ArrayLike
+    normal_always_positive = False
 
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
@@ -39,7 +40,12 @@ class ScreenObject(ABC):
         if max_value and coefficient > max_value:
             return max_value
         return coefficient
-    
+
+    @staticmethod
+    def get_intersect_point(ray, t):
+        vector = ray.direction * t
+        return ray.origin.add_vector(vector)
+
     def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, shininess=0):
         self.k_diffusion = self.validate_coefficient(k_diffusion)
         self.k_specular = self.validate_coefficient(k_specular)
@@ -47,6 +53,7 @@ class ScreenObject(ABC):
         self.k_reflection = self.validate_coefficient(k_reflection)
         self.shininess = self.validate_coefficient(shininess)
         return self
+
 
 
 class Sphere(ScreenObject):
@@ -66,8 +73,7 @@ class Sphere(ScreenObject):
             t1 = (-b - np.sqrt(discriminant)) / (2.0 * a)
             t2 = (-b + np.sqrt(discriminant)) / (2.0 * a)
             t = min(t1, t2)
-            vector = ray.direction * t
-            intersect_point = ray.origin.add_vector(vector)
+            intersect_point = self.get_intersect_point(ray, t)
             return {'t': t, 'color': self.color, 'point': intersect_point}
         else:
             return {}
@@ -85,6 +91,7 @@ class Plane(ScreenObject):
         self.point = point
         self.normal = normal.normalize()
         self.color = color
+        self.normal_always_positive = True
 
     def intersect(self, ray: Ray) -> dict:
         denom = Vector.dot(ray.direction, self.normal)
@@ -95,7 +102,7 @@ class Plane(ScreenObject):
             if t <= 0:
                 return {}
             else:
-                return {'t': t, 'color': self.color}
+                return {'t': t, 'color': self.color, 'point': self.get_intersect_point(ray, t)}
         else:
             return {}
         
@@ -103,6 +110,9 @@ class Plane(ScreenObject):
         self.normal = transf.transform_vector(self.normal)
         self.point = transf.transform_point(self.point)
         return self
+
+    def normal_of(self, point: Point) -> Vector:
+        return self.normal
     
 class Triangle(ScreenObject):
     def __init__(self, points: Tuple[Point, Point, Point], color: npt.ArrayLike,
