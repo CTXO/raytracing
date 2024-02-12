@@ -70,13 +70,22 @@ def spheres_and_plane():
 
 
 def triangle():
-    p1 = Point((0, 1, 3))
-    p2 = Point((0.5, 0, 3))
-    p3 = Point((-0.5, 0, 3))
+
+    params = {
+        'k_diffusion': 1,
+        'k_ambient': 0.1,
+        'k_specular': 0.9,
+        'shininess': 10
+    }
+    p1 = Point((0, 4, 3))
+    p2 = Point((2, 0, 3))
+    p3 = Point((-2, 0, 3))
     translation = Translation(1,0, 0)
     rotationZ = RotationZ(45)
     triangle_ret = Triangle((p3, p2, p1), colors.RED)
-    return [triangle_ret.transform(translation).transform(rotationZ)]
+    triangle_ret.set_coefficients(**params)
+    c = get_camera(**points_close, lights=[Light(Point([3, -3, 0]))])
+    c.render([triangle_ret])
 
 
 def pentagon():

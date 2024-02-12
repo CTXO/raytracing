@@ -12,7 +12,7 @@ l = Light(Point([0,3,3]), [255,255,255])
 
 
 # c1 = Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
-spheres_and_plane()
+triangle()
 
 
 # More realistic camera

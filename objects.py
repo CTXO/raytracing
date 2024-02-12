@@ -130,6 +130,7 @@ class Triangle(ScreenObject):
             self.normal = normal.normalize()
         except:
             self.normal = self.raw_normal
+        self.normal_always_positive = True
 
     def area(self):
         return self.raw_normal.magnitude() / 2
@@ -141,7 +142,7 @@ class Triangle(ScreenObject):
         if not plane_intersect_t or plane_intersect_t < 0:
             return {}
 
-        point_intersect = ray.origin.add_vector(ray.direction * plane_intersect_t)
+        point_intersect = self.get_intersect_point(ray, plane_intersect_t)
 
         t1 = Triangle(points=[point_intersect, self.points[0], self.points[1]], color=self.color)
         t2 = Triangle(points=[point_intersect, self.points[0], self.points[2]], color=self.color)
@@ -159,7 +160,7 @@ class Triangle(ScreenObject):
         if abs(alpha + beta + gamma - 1) > 1e-6:
             return {}
         if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1:
-            return {"t": plane_intersect_t, "normal": self.normal, "color": self.color}
+            return {"t": plane_intersect_t, "normal": self.normal, "color": self.color, "point": point_intersect}
         return {}
     
     def transform(self, transf: Transformation) -> ScreenObject:
@@ -169,6 +170,9 @@ class Triangle(ScreenObject):
         self.points = transformed_points
         self.normal = transf.transform_vector(self.normal)
         return self
+
+    def normal_of(self, point: Point) -> Vector:
+        return self.normal
 
     def __str__(self):
         return f"""
