@@ -3,9 +3,37 @@ from objects import Plane
 from objects import Sphere
 from objects import TMesh
 from objects import Triangle
+from scene import Camera
+from scene import Light
+from scene import Screen
 from structures import Point
 from structures import Vector
 from transformations import RotationX, RotationY, RotationZ, Translation
+
+
+def camera1() -> Camera:
+    origin_point = Point((0, 0, 0))
+    target_point = Point((0, 0, 0.5))
+    up_vector = Vector((0, 1, 0))
+    l = Light(Point([0, 1, 1]), [255, 255, 255])
+
+    return Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
+
+def camera1_diagonal() -> Camera:
+    origin_point = Point((0, 4, 0))
+    target_point = Point((0, 3.5, 0.5))
+    up_vector = Vector((0, 1, 0))
+    l = Light(Point([0, 3, 3]), [255, 255, 255])
+
+    return Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
+
+
+def camera2() -> Camera:
+    initial_p = Point((-300, 300, 300))
+    target_p = Point((-299, 299, 299))
+    normal = Vector((0, 100, 0))
+    return Camera(initial_p=initial_p, target_p=target_p, up_input_v=normal, scene=Screen())
+
 
 def sphere():
     translation = Translation(-1.5,0,0)
@@ -13,8 +41,11 @@ def sphere():
     rotationY = RotationY(-45)
     rotationX = RotationX(-45)
     sphere3 = Sphere(Point((1.5, 0, 3)), 1, colors.BLUE).transform(translation)
-    sphere3.set_coefficients(k_diffusion=0.3, k_ambient=0.2)
-    return [sphere3]
+    sphere3.set_coefficients(k_diffusion=1, k_ambient=0.1)
+    c = camera1()
+    c_diagonal = camera1_diagonal()
+    c_diagonal.render([sphere3])
+    c.render([sphere3])
 
 
 def spheres_and_plane():
