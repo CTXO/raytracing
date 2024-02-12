@@ -71,9 +71,15 @@ class Camera:
         partial_result = np.array([0,0,0])
         for light in self.lights:
             light_vector = Vector.from_points(intersect_point, light.point)
-            cos = Vector.dot(obj.normal_of(intersect_point).normalize(), light_vector.normalize())
-            r = light.color * obj.color * obj.k_diffusion * max(cos, 0)
-            partial_result = partial_result + r
+            obj_normal = obj.normal_of(intersect_point).normalize()
+            cos_lv_normal = Vector.dot(obj_normal, light_vector.normalize())
+            diffusion = light.color * obj.color * obj.k_diffusion * max(cos_lv_normal, 0)
+
+            camera_vector = Vector.from_points(intersect_point, self.initial_p)
+            reflected_vector: Vector = (obj_normal * 2 * cos_lv_normal).add_vector(-light_vector.normalize())
+            cos_rv_camera = Vector.dot(reflected_vector.normalize(), camera_vector.normalize())
+            specular = light.color * obj.k_specular * (max(cos_rv_camera, 0) ** obj.shininess)
+            partial_result = partial_result + diffusion + specular
 
         result = obj.k_ambient * self.ambient_light + partial_result
         result = np.clip(result, 0, 255)
