@@ -134,9 +134,19 @@ def star():
         (5, 7, 9),
     ]
 
+    params = {
+        'k_diffusion': 1,
+        'k_ambient': 0.1,
+        'k_specular': 0.2,
+        'shininess': 1
+    }
+
     star_ret = TMesh(triangle_count=8, vertex_count=10, vertices=vertices_star, vertices_indexes=indexes_star,
                  colors=[colors.BLUE] * 8)
-    return [star_ret.transform(RotationZ(45))]
+    star_ret.set_coefficients(**params)
+    c = get_camera(**points_close, lights=[Light(Point([-5, -3, 4]))])
+
+    c.render([star_ret])
 
 
 def face():

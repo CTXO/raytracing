@@ -70,15 +70,19 @@ class Camera:
     def set_position(self, pos):
         self.current_spot = pos
         
-    def calculate_color(self, obj, intersect_point: Point):
+    def calculate_color(self, obj, intersect_point: Point, triangle_id=None):
         partial_result = np.array([0,0,0])
         for light in self.lights:
             light_vector = Vector.from_points(intersect_point, light.point)
-            obj_normal = obj.normal_of(intersect_point).normalize()
+            obj_normal = obj.normal_of(intersect_point, triangle_id).normalize()
             cos_lv_normal = Vector.dot(obj_normal, light_vector.normalize())
             if obj.normal_always_positive:
                 cos_lv_normal = abs(cos_lv_normal)
-            diffusion = light.color * obj.color * obj.k_diffusion * max(cos_lv_normal, 0)
+            if getattr(obj, 'color', None):
+                obj_color = obj.color
+            else:
+                obj_color = obj.colors[triangle_id]
+            diffusion = light.color * obj_color * obj.k_diffusion * max(cos_lv_normal, 0)
 
             camera_vector = Vector.from_points(intersect_point, self.initial_p)
             reflected_vector: Vector = (obj_normal * 2 * cos_lv_normal).add_vector(-light_vector.normalize())
@@ -129,7 +133,7 @@ class Camera:
 
                 if chosen_obj:
                     point = chosen_intersect.get('point')
-                    color = self.calculate_color(chosen_obj, point)
+                    color = self.calculate_color(chosen_obj, point, chosen_intersect.get('triangle_id'))
                     # color = chosen_intersect.get('color')
                 else:
                     color = np.array([0,0,0])  # black

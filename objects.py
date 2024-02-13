@@ -3,6 +3,8 @@ from __future__ import annotations
 from abc import ABC
 from abc import abstractmethod
 from typing import List, Tuple
+from typing import Optional
+
 from structures import Vector, Point
 from scene import Ray
 
@@ -30,7 +32,7 @@ class ScreenObject(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def normal_of(self, point: Point) -> Vector:
+    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
         raise NotImplemented
     
     @staticmethod
@@ -81,8 +83,8 @@ class Sphere(ScreenObject):
     def transform(self, transf: Transformation) -> ScreenObject:
         self.center = transf.transform_point(self.center)
         return self
-    
-    def normal_of(self, point: Point) -> Vector:
+
+    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
         return Vector.from_points(self.center, point)
     
 
@@ -111,7 +113,7 @@ class Plane(ScreenObject):
         self.point = transf.transform_point(self.point)
         return self
 
-    def normal_of(self, point: Point) -> Vector:
+    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
         return self.normal
     
 class Triangle(ScreenObject):
@@ -171,7 +173,7 @@ class Triangle(ScreenObject):
         self.normal = transf.transform_vector(self.normal)
         return self
 
-    def normal_of(self, point: Point) -> Vector:
+    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
         return self.normal
 
     def __str__(self):
@@ -186,6 +188,7 @@ class Triangle(ScreenObject):
 class TMesh(ScreenObject):
     triangles: List[Triangle]
     triangle_normals: List[Vector]
+    normal_always_positive = True
 
     def __init__(self, triangle_count: int, vertex_count: int, vertices: List[Point],
                  vertices_indexes: List[Tuple[int, int, int]], colors: List[npt.ArrayLike],
@@ -221,26 +224,39 @@ class TMesh(ScreenObject):
         self.triangle_normals = triangle_normals
 
         if vertices_normals is None:
+            # Implement
             pass
+
         elif len(vertices_normals) != self.vertex_count:
             raise ValueError(f"Expected {self.vertex_count} vertices_normals. Found {len(vertices_normals)} instead.")
 
         self.vertices_normals = vertices_normals
 
+    def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, shininess=0):
+        super().set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, shininess)
+        for triangle in self.triangles:
+            triangle.set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, shininess)
+        return self
+
+
     def intersect(self, ray: Ray) -> dict:
         intersect_triangle = None
         triangle_id = None
+        min_t = float('inf')
         for i, triangle in enumerate(self.triangles):
-            intersect_triangle = triangle.intersect(ray)
-            if intersect_triangle.get('t'):
+            intersect_temp = triangle.intersect(ray)
+            t_temp = intersect_temp.get('t')
+            if t_temp and t_temp < min_t:
                 triangle_id = i
+                min_t = t_temp
+                intersect_triangle = intersect_temp
                 break
-        if intersect_triangle.get('t'):
+
+        if intersect_triangle and intersect_triangle.get('t'):
             intersect_triangle.update({'triangle_id': triangle_id})
             return intersect_triangle
 
         return {}
-    
 
     def transform(self, transf: Transformation) -> ScreenObject:
         transformed_triangles = []
@@ -262,4 +278,7 @@ class TMesh(ScreenObject):
                 transformed_vertices_normals.append(transf.transform_vector(vertice_normal))
             self.vertices_normals = transformed_vertices_normals
         return self
-            
+
+    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
+        return self.triangle_normals[triangle_id]
+
