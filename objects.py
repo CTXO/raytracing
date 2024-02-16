@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC
 from abc import abstractmethod
 from typing import List, Tuple
-from typing import Optional
 
 from structures import Vector, Point
 from scene import Ray
@@ -32,7 +31,7 @@ class ScreenObject(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
+    def normal_of(self, point: Point, **kwargs) -> Vector:
         raise NotImplemented
     
     @staticmethod
@@ -55,7 +54,6 @@ class ScreenObject(ABC):
         self.k_reflection = self.validate_coefficient(k_reflection)
         self.shininess = self.validate_coefficient(shininess)
         return self
-
 
 
 class Sphere(ScreenObject):
@@ -84,7 +82,7 @@ class Sphere(ScreenObject):
         self.center = transf.transform_point(self.center)
         return self
 
-    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
+    def normal_of(self, point: Point, **kwargs) -> Vector:
         return Vector.from_points(self.center, point)
     
 
@@ -113,9 +111,10 @@ class Plane(ScreenObject):
         self.point = transf.transform_point(self.point)
         return self
 
-    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
+    def normal_of(self, point: Point, **kwargs) -> Vector:
         return self.normal
-    
+
+
 class Triangle(ScreenObject):
     def __init__(self, points: Tuple[Point, Point, Point], color: npt.ArrayLike,
                  normal: Vector = None):
@@ -173,7 +172,7 @@ class Triangle(ScreenObject):
         self.normal = transf.transform_vector(self.normal)
         return self
 
-    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
+    def normal_of(self, point: Point, **kwargs) -> Vector:
         return self.normal
 
     def __str__(self):
@@ -279,6 +278,9 @@ class TMesh(ScreenObject):
             self.vertices_normals = transformed_vertices_normals
         return self
 
-    def normal_of(self, point: Point, triangle_id: Optional[int] = None) -> Vector:
+    def normal_of(self, point: Point, **kwargs) -> Vector:
+        triangle_id = kwargs.get('triangle_id')
+        if not triangle_id:
+            raise ValueError("Expected triangle_id")
         return self.triangle_normals[triangle_id]
 
