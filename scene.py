@@ -78,11 +78,14 @@ class Camera:
             cos_lv_normal = Vector.dot(obj_normal, light_vector.normalize())
             if obj.normal_always_positive:
                 cos_lv_normal = abs(cos_lv_normal)
-            if getattr(obj, 'color', None):
+            else:
+                cos_lv_normal = max(cos_lv_normal, 0)
+
+            if triangle_id is None:
                 obj_color = obj.color
             else:
                 obj_color = obj.colors[triangle_id]
-            diffusion = light.color * obj_color * obj.k_diffusion * max(cos_lv_normal, 0)
+            diffusion = light.color * obj_color * obj.k_diffusion * cos_lv_normal
 
             camera_vector = Vector.from_points(intersect_point, self.initial_p)
             reflected_vector: Vector = (obj_normal * 2 * cos_lv_normal).add_vector(-light_vector.normalize())
