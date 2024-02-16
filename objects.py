@@ -223,8 +223,15 @@ class TMesh(ScreenObject):
         self.triangle_normals = triangle_normals
 
         if vertices_normals is None:
-            # Implement
-            pass
+            vertices_normals = []
+            for i, vertex in enumerate(self.vertices): # vertex is a point
+                vertex_normal = Vector([0, 0, 0])
+                for triangle_tuple in vertices_indexes: # triangle_tuple is a tuple of 3 indexes
+                    if i in triangle_tuple:
+                        triangle_index = vertices_indexes.index(triangle_tuple)
+                        triangle = self.triangles[triangle_index]
+                        vertex_normal = vertex_normal.add_vector(triangle.normal)
+                vertices_normals.append(vertex_normal.normalize())
 
         elif len(vertices_normals) != self.vertex_count:
             raise ValueError(f"Expected {self.vertex_count} vertices_normals. Found {len(vertices_normals)} instead.")

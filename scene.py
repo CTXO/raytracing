@@ -7,9 +7,9 @@ import cv2
 
 
 class Screen:
-    h_res = 400
-    v_res = 400
-    screen_size = 800
+    h_res = 1000
+    v_res = 1000
+    screen_size = 1000
     pixel_size_h = 2 / h_res
     pixel_size_v = 2 / v_res
     
