@@ -136,18 +136,10 @@ class Triangle(ScreenObject):
     def area(self):
         return self.raw_normal.magnitude() / 2
 
-    def intersect(self, ray: Ray) -> dict:
-        triangle_plane = Plane(self.points[0], self.normal,
-                               self.color)  # Make plane and other objects accept Vector instead of [float]
-        plane_intersect_t = triangle_plane.intersect(ray).get('t')
-        if not plane_intersect_t or plane_intersect_t < 0:
-            return {}
-
-        point_intersect = self.get_intersect_point(ray, plane_intersect_t)
-
-        t1 = Triangle(points=[point_intersect, self.points[0], self.points[1]], color=self.color)
-        t2 = Triangle(points=[point_intersect, self.points[0], self.points[2]], color=self.color)
-        t3 = Triangle(points=[point_intersect, self.points[1], self.points[2]], color=self.color)
+    def get_baricentric_coordinates(self, point: Point):
+        t1 = Triangle(points=[point, self.points[0], self.points[1]], color=self.color)
+        t2 = Triangle(points=[point, self.points[0], self.points[2]], color=self.color)
+        t3 = Triangle(points=[point, self.points[1], self.points[2]], color=self.color)
 
         at1 = t1.area()
         at2 = t2.area()
@@ -157,6 +149,20 @@ class Triangle(ScreenObject):
         alpha = at1 / at
         beta = at2 / at
         gamma = at3 / at
+
+        return alpha, beta, gamma
+
+
+    def intersect(self, ray: Ray) -> dict:
+        triangle_plane = Plane(self.points[0], self.normal,
+                               self.color)  # Make plane and other objects accept Vector instead of [float]
+        plane_intersect_t = triangle_plane.intersect(ray).get('t')
+        if not plane_intersect_t or plane_intersect_t < 0:
+            return {}
+
+        point_intersect = self.get_intersect_point(ray, plane_intersect_t)
+
+        alpha, beta, gamma = self.get_baricentric_coordinates(point_intersect)
 
         if abs(alpha + beta + gamma - 1) > 1e-6:
             return {}
