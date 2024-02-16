@@ -293,5 +293,13 @@ class TMesh(ScreenObject):
         triangle_id = kwargs.get('triangle_id')
         if triangle_id is None:
             raise ValueError("Expected triangle_id")
-        return self.triangle_normals[triangle_id]
+        triangle = self.triangles[triangle_id]
+        triangle_vertices_ids = self.vertices_indexes[triangle_id]
+        vertices_normal = []
+        for triangle_vertice_id in triangle_vertices_ids:
+            vertices_normal.append(self.vertices_normals[triangle_vertice_id])
+
+        alpha, beta, gamma = triangle.get_baricentric_coordinates(point)
+        normal = (vertices_normal[0] * alpha).add_vector(vertices_normal[1] * beta).add_vector(vertices_normal[2] * gamma)
+        return normal
 
