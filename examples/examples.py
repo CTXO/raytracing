@@ -21,10 +21,15 @@ points_close_diagonal = {
     'target_point': Point((0, 3.5, 0.5)),
     'up_vector': Vector((0, 1, 0)),
 }
+points_close_diagonal_down = {
+    'origin_point': Point((0, -4, 0)),
+    'target_point': Point((0, -3.5, 0.5)),
+    'up_vector': Vector((0, 1, 0)),
+}
 points_realistic = {
-    'origin_point': Point((-300, 300, 300)),
-    'target_point': Point((-299, 299, 299)),
-    'up_vector': Point((0, 100, 0)),
+    'origin_point': Point((-250, 300, 300)),
+    'target_point': Point((-249, 299, 299)),
+    'up_vector': Vector((0, 100, 0)),
 }
 
 point_above_circle = Point((0, 3, 3))
@@ -226,6 +231,13 @@ def pyramid():
         (3, 0, 4)
     ]
 
+    params = {
+        'k_diffusion': 1,
+        'k_ambient': 0.1,
+        'k_specular': 0.9,
+        'shininess': 10
+    }
+
     color_list = [
         colors.RED,
         colors.GREEN,
@@ -233,8 +245,65 @@ def pyramid():
         colors.GREEN
     ]
 
+    c = get_camera(**points_realistic, lights=[Light(Point([0, 500, 0]))])
+
+
     t_mesh = TMesh(triangle_count=t_count, vertex_count=5, vertices=vertices, vertices_indexes=indexes, colors=color_list)
+    t_mesh.set_coefficients(**params)
+    c.render([t_mesh])
     return [t_mesh]
+
+
+def simple_scenario():
+    sphere1 = Sphere(Point([2,0,5]), 1, colors.RED)
+    sphere2 = Sphere(Point([-2,0,7]), 1, colors.BLUE)
+    plane = Plane(Point([0,0,0]), Vector([0,1,0]), colors.GREEN)
+
+    pyramid_points = [
+        Point([1, 0, 1]),
+        Point([1, 0, 3]),
+        Point([-1, 0, 1]),
+        Point([-1, 0, 3]),
+        Point([0, 1, 2]),
+    ]
+
+    indexes = [
+        (0, 1, 4),
+        (1, 3, 4),
+        (3, 2, 4),
+        (2, 0, 4),
+        (0, 1, 3),
+        (1, 3, 2),
+    ]
+
+    color_list = [
+        colors.RED,
+        colors.YELLOW,
+        colors.BLUE,
+        colors.CYAN,
+        colors.RED,
+        colors.BLUE
+    ]
+    pyramid = TMesh(triangle_count=len(indexes), vertex_count=len(pyramid_points), vertices=pyramid_points,
+                    vertices_indexes=indexes, colors=color_list)
+
+    params = {
+        'k_diffusion': 0.6,
+        'k_ambient': 0.1,
+        'k_specular': 0.1,
+        'shininess': 10
+    }
+
+    sphere1.set_coefficients(**params)
+    sphere2.set_coefficients(**params)
+    plane.set_coefficients(**params)
+    pyramid.set_coefficients(**params)
+
+    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0]))])
+    c.render([sphere1, sphere2, plane, pyramid])
+
+
+
 
 
 
