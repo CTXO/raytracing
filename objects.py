@@ -237,7 +237,6 @@ class TMesh(ScreenObject):
             triangle.set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, shininess)
         return self
 
-
     def intersect(self, ray: Ray) -> dict:
         intersect_triangle = None
         triangle_id = None
@@ -249,7 +248,6 @@ class TMesh(ScreenObject):
                 triangle_id = i
                 min_t = t_temp
                 intersect_triangle = intersect_temp
-                break
 
         if intersect_triangle and intersect_triangle.get('t'):
             intersect_triangle.update({'triangle_id': triangle_id})
