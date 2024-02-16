@@ -278,7 +278,7 @@ class TMesh(ScreenObject):
 
     def normal_of(self, point: Point, **kwargs) -> Vector:
         triangle_id = kwargs.get('triangle_id')
-        if not triangle_id:
+        if triangle_id is None:
             raise ValueError("Expected triangle_id")
         return self.triangle_normals[triangle_id]
 

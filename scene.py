@@ -74,7 +74,7 @@ class Camera:
         partial_result = np.array([0,0,0])
         for light in self.lights:
             light_vector = Vector.from_points(intersect_point, light.point)
-            obj_normal = obj.normal_of(intersect_point, triangle_id).normalize()
+            obj_normal = obj.normal_of(intersect_point, triangle_id=triangle_id).normalize()
             cos_lv_normal = Vector.dot(obj_normal, light_vector.normalize())
             if obj.normal_always_positive:
                 cos_lv_normal = abs(cos_lv_normal)
