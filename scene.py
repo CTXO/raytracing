@@ -6,6 +6,12 @@ import numpy as np
 import cv2
 
 
+class Ray:
+    def __init__(self, origin: Point, direction: Vector):
+        self.origin = origin
+        self.direction = direction.normalize()
+
+
 class Screen:
     h_res = 1000
     v_res = 1000
@@ -32,6 +38,7 @@ class Light:
     
     
 class Camera:
+
     ambient_light = np.array([255,255,255])
     
     def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light]):
@@ -70,8 +77,10 @@ class Camera:
     def set_position(self, pos):
         self.current_spot = pos
         
-    def calculate_color(self, obj, intersect_point: Point, triangle_id=None):
+    def calculate_color(self, obj, intersect_point: Point, objs, triangle_id=None, recursion_depth=0):
+        recursion_limit = 1
         partial_result = np.array([0,0,0])
+        reflected_vector = None
         for light in self.lights:
             light_vector = Vector.from_points(intersect_point, light.point)
             obj_normal = obj.normal_of(intersect_point, triangle_id=triangle_id).normalize()
@@ -94,8 +103,34 @@ class Camera:
             partial_result = partial_result + diffusion + specular
 
         result = obj.k_ambient * self.ambient_light + partial_result
+        if reflected_vector and recursion_depth < recursion_limit and obj.k_reflection > 0:
+            reflected_ray = Ray(origin=intersect_point, direction=reflected_vector)
+            chosen_obj, chosen_intersect = self.calculate_intersection(reflected_ray, objs)
+            if chosen_obj:
+                point = chosen_intersect.get('point')
+                triangle_id = chosen_intersect.get('triangle_id')
+                reflected_color = self.calculate_color(chosen_obj, point, objs, triangle_id,
+                                                       recursion_depth=recursion_depth+1)
+                print("in recursion", recursion_depth)
+                print("reflected_color", reflected_color)
+                result = result + obj.k_reflection*reflected_color
+
         result = np.clip(result, 0, 255)
         return result
+
+    def calculate_intersection(self, ray: Ray, objs):
+        min_t = float('inf')
+        chosen_obj = None
+        chosen_intersect = None
+        for obj in objs:
+            intersect = obj.intersect(ray)
+            t = intersect.get('t')
+            if t and t < min_t:
+                min_t = t
+                chosen_obj = obj
+                chosen_intersect = intersect
+
+        return chosen_obj, chosen_intersect
 
     def render(self, objs, save_file=None):
         start_time = time.time()
@@ -124,19 +159,10 @@ class Camera:
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
 
-                min_t = float('inf')
-                chosen_obj = None
-                for obj in objs:
-                    intersect = obj.intersect(ray)
-                    t = intersect.get('t')
-                    if t and t < min_t:
-                        min_t = t
-                        chosen_obj = obj
-                        chosen_intersect = intersect
-
+                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objs)
                 if chosen_obj:
                     point = chosen_intersect.get('point')
-                    color = self.calculate_color(chosen_obj, point, chosen_intersect.get('triangle_id'))
+                    color = self.calculate_color(chosen_obj, point, objs, chosen_intersect.get('triangle_id'))
                     # color = chosen_intersect.get('color')
                 else:
                     color = np.array([0,0,0])  # black
@@ -186,9 +212,4 @@ class Camera:
             """
         return s
         
-
-class Ray:
-    def __init__(self, origin: Point, direction: Vector):
-        self.origin = origin
-        self.direction = direction.normalize()
 
