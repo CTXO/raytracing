@@ -255,8 +255,8 @@ def pyramid():
 
 
 def simple_scenario():
-    sphere1 = Sphere(Point([2,0,5]), 1, colors.RED)
-    sphere2 = Sphere(Point([-2,0,7]), 1, colors.BLUE)
+    sphere1 = Sphere(Point([2,0,5]), 2, colors.RED)
+    sphere2 = Sphere(Point([-2,0,5]), 2, colors.BLUE)
     plane = Plane(Point([0,0,0]), Vector([0,1,0]), colors.GREEN)
 
     pyramid_points = [
@@ -264,7 +264,7 @@ def simple_scenario():
         Point([1, 0, 3]),
         Point([-1, 0, 1]),
         Point([-1, 0, 3]),
-        Point([0, 1, 2]),
+        Point([0, 2, 2]),
     ]
 
     indexes = [
@@ -277,12 +277,12 @@ def simple_scenario():
     ]
 
     color_list = [
-        colors.RED,
-        colors.YELLOW,
         colors.BLUE,
-        colors.CYAN,
+        colors.YELLOW,
         colors.RED,
-        colors.BLUE
+        colors.CYAN,
+        colors.BLUE,
+        colors.RED
     ]
     pyramid = TMesh(triangle_count=len(indexes), vertex_count=len(pyramid_points), vertices=pyramid_points,
                     vertices_indexes=indexes, colors=color_list)
@@ -294,13 +294,13 @@ def simple_scenario():
         'shininess': 10
     }
 
-    sphere1.set_coefficients(**params)
-    sphere2.set_coefficients(**params)
-    plane.set_coefficients(**params)
-    pyramid.set_coefficients(**params)
+    sphere1.set_coefficients(**params, k_reflection=1)
+    sphere2.set_coefficients(**params, k_reflection=1)
+    plane.set_coefficients(**params, k_reflection=1)
+    pyramid.set_coefficients(**params, k_reflection=0.3)
 
     c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0]))])
-    c.render([sphere1, sphere2, plane, pyramid])
+    c.render([sphere1, pyramid, plane, sphere2])
 
 
 
