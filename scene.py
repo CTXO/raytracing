@@ -1,4 +1,5 @@
 import time
+from math import sqrt
 from typing import List
 
 from structures import Vector, Point
@@ -13,9 +14,9 @@ class Ray:
 
 
 class Screen:
-    h_res = 300
-    v_res = 300
-    screen_size = 300
+    h_res = 400
+    v_res = 400
+    screen_size = 800
     pixel_size_h = 2 / h_res
     pixel_size_v = 2 / v_res
     
@@ -76,7 +77,10 @@ class Camera:
 
     def set_position(self, pos):
         self.current_spot = pos
-        
+
+    def get_sin_or_cos(self, sin_or_cos):
+        return sqrt(1 - sin_or_cos**2)
+
     def calculate_color(self, obj, intersect_point: Point, objs, triangle_id=None, recursion_depth=0):
         recursion_limit = 3
         partial_result = np.array([0,0,0])
@@ -114,6 +118,25 @@ class Camera:
                 reflected_color = self.calculate_color(chosen_obj, point, objs, triangle_id,
                                                        recursion_depth=recursion_depth+1)
                 result = result + obj.k_reflection*reflected_color
+
+        if recursion_depth < recursion_limit and obj.k_refraction > 0:
+            n = obj.n_refraction
+            cos_theta = Vector.dot(obj_normal, v_vector.normalize())
+            sin_theta = self.get_sin_or_cos(cos_theta)
+            sin_theta_t = sin_theta / n
+            cos_theta_t = self.get_sin_or_cos(sin_theta_t)
+            t_vector = (v_vector*(1/n)).add_vector(-obj_normal*(cos_theta_t - (1/n)*cos_theta))
+            t_ray = Ray(origin=intersect_point, direction=t_vector)
+            chosen_obj, chosen_intersect = self.calculate_intersection(t_ray, objs, current_obj=obj)
+            if chosen_intersect:
+                chosen_triangle_id = chosen_intersect.get('triangle_id')
+                different_objects = chosen_obj != obj or chosen_triangle_id is not None and chosen_triangle_id != triangle_id
+                if different_objects:
+                    point = chosen_intersect.get('point')
+                    triangle_id = chosen_intersect.get('triangle_id')
+                    refracted_color = self.calculate_color(chosen_obj, point, objs, triangle_id,
+                                                           recursion_depth=recursion_depth+1)
+                    result = result + obj.k_refraction*refracted_color
 
         result = np.clip(result, 0, 255)
         return result

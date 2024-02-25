@@ -18,6 +18,8 @@ class ScreenObject(ABC):
     k_specular: float = 0
     k_ambient: float = 0
     k_reflection: float = 0
+    k_refraction: float = 0
+    n_refraction: float = 1
     shininess: float = 0
     color: npt.ArrayLike
     normal_always_positive = False
@@ -47,11 +49,13 @@ class ScreenObject(ABC):
         vector = ray.direction * t
         return ray.origin.add_vector(vector)
 
-    def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, shininess=0):
+    def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, k_refraction=0, n_refraction=1, shininess=0):
         self.k_diffusion = self.validate_coefficient(k_diffusion)
         self.k_specular = self.validate_coefficient(k_specular)
         self.k_ambient = self.validate_coefficient(k_ambient)
         self.k_reflection = self.validate_coefficient(k_reflection)
+        self.k_refraction = self.validate_coefficient(k_refraction)
+        self.n_refraction = self.validate_coefficient(n_refraction, min_value=1, max_value=None)
         self.shininess = self.validate_coefficient(shininess)
         return self
 
@@ -99,7 +103,7 @@ class Plane(ScreenObject):
             v = Vector.from_points(ray.origin, self.point)
             t = Vector.dot(v, self.normal) / denom
 
-            if t <= 0:
+            if t <= 1e-6:
                 return {}
             else:
                 return {'t': t, 'color': self.color, 'point': self.get_intersect_point(ray, t)}
@@ -244,10 +248,10 @@ class TMesh(ScreenObject):
 
         self.vertices_normals = vertices_normals
 
-    def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, shininess=0):
-        super().set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, shininess)
+    def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, k_refraction=0, n_refraction=1, shininess=0):
+        super().set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, k_refraction, n_refraction, shininess)
         for triangle in self.triangles:
-            triangle.set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, shininess)
+            triangle.set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, k_refraction, n_refraction, shininess)
         return self
 
     def intersect(self, ray: Ray) -> dict:

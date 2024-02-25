@@ -70,12 +70,13 @@ def spheres_and_plane():
     c = get_camera(**points_close, lights=[Light(point_bellow_plane)])
     translation = Translation(2, 0, 0)
     rotationZ = RotationZ(90)
-    objs = [sphere1, sphere2, plane]
-    c.render(objs)
+    sphere_translation = Translation(0, -2, 0)
+    objs = [sphere1.transform(sphere_translation), sphere2, plane.transform(rotationZ)]
+    c.render_from_file(load_file='./examples/spheres_and_plane_rotated_and_translated.npy')
+    # c.render(objs, save_file='./examples/spheres_and_plane_rotated_and_translated.npy')
 
 
 def triangle():
-
     params = {
         'k_diffusion': 1,
         'k_ambient': 0.1,
@@ -87,10 +88,13 @@ def triangle():
     p3 = Point((-2, 0, 3))
     translation = Translation(1,0, 0)
     rotationZ = RotationZ(45)
+    rotationX = RotationY(45)
     triangle_ret = Triangle((p3, p2, p1), colors.RED)
     triangle_ret.set_coefficients(**params)
+    triangle_ret.transform(rotationX)
     c = get_camera(**points_close, lights=[Light(Point([3, -3, 0]))])
-    c.render([triangle_ret])
+    c.render_from_file(load_file='./examples/triangle_rotated.npy')
+    # c.render([triangle_ret], save_file='./examples/triangle_rotated.npy')
 
 
 def pentagon():
@@ -151,7 +155,7 @@ def star():
     star_ret.set_coefficients(**params)
     c = get_camera(**points_close, lights=[Light(Point([-5, -3, 4]))])
 
-    c.render([star_ret])
+    c.render([star_ret], save_file='./examples/star_original.npy')
 
 
 def face():
@@ -291,16 +295,16 @@ def simple_scenario():
         'k_diffusion': 0.6,
         'k_ambient': 0.1,
         'k_specular': 0.1,
-        'shininess': 10
+        'shininess': 10,
     }
 
-    sphere1.set_coefficients(**params, k_reflection=1)
-    sphere2.set_coefficients(**params, k_reflection=1)
-    plane.set_coefficients(**params, k_reflection=1)
-    pyramid.set_coefficients(**params, k_reflection=0.3)
+    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1, k_refraction=1, n_refraction=1.5)
+    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1, k_refraction=1, n_refraction=1.5)
+    plane.set_coefficients(**params, k_reflection=1, k_refraction=1, n_refraction=1.5)
+    pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_reflection=0.3, k_refraction=1, n_refraction=1.5)
 
     c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0]))])
-    c.render([sphere1, pyramid, plane, sphere2])
+    c.render([sphere1, pyramid, plane, sphere2], save_file='./examples/scenario-3.npy')
 
 
 

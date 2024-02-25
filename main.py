@@ -13,8 +13,7 @@ l = Light(Point([0,3,3]), [255,255,255])
 
 # c1 = Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
 simple_scenario()
-
-
+# spheres_and_plane()
 # More realistic camera
 initial_p = Point((-300, 300, 300))
 target_p = Point((-299, 299, 299))
