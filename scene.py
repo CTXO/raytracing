@@ -88,6 +88,13 @@ class Camera:
         obj_normal = obj.normal_of(intersect_point, triangle_id=triangle_id).normalize()
         for light in self.lights:
             light_vector = Vector.from_points(intersect_point, light.point)
+            light_vector_inverted = -light_vector
+            ray_from_light = Ray(origin=light.point, direction=light_vector_inverted)
+            light_object, _ = self.calculate_intersection(ray_from_light, objs)
+            if light_object and light_object != obj:
+                print("shadow!!!", light_object, obj)
+                continue
+
             cos_lv_normal = Vector.dot(obj_normal, light_vector.normalize())
             if obj.normal_always_positive:
                 cos_lv_normal = abs(cos_lv_normal)

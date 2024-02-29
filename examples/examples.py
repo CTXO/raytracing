@@ -298,13 +298,14 @@ def simple_scenario():
         'shininess': 10,
     }
 
-    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1, k_refraction=1, n_refraction=1.5)
-    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1, k_refraction=1, n_refraction=1.5)
-    plane.set_coefficients(**params, k_reflection=1, k_refraction=1, n_refraction=1.5)
-    pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_reflection=0.3, k_refraction=1, n_refraction=1.5)
+    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_refraction=1, n_refraction=1.5)
+    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_refraction=1, n_refraction=1.5)
+    plane.set_coefficients(**params, k_refraction=1, n_refraction=1.5)
+    pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_refraction=0.5, n_refraction=1.5)
 
-    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0]))])
-    c.render([sphere1, pyramid, plane, sphere2], save_file='./examples/scenario-3.npy')
+    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))])
+    c.render_from_file(load_file='./examples/scenario-3-shadow.npy')
+    # c.render([sphere1, pyramid, plane, sphere2], save_file='./examples/scenario-3-shadow.npy')
 
 
 
