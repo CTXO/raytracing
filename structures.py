@@ -15,6 +15,9 @@ class Point:
     def get_coordinates(self) -> [float]:
         return [self.p[0], self.p[1], self.p[2]]
 
+    def __getitem__(self, item):
+        return self.p[item]
+
 
 class Vector:
     def __init__(self, v: [float] = None, v_np: npt.NDArray = None) -> None:
@@ -68,6 +71,9 @@ class Vector:
 
     def __neg__(self) -> Vector:
         return Vector(self.v * -1)
+
+    def __getitem__(self, item):
+        return self.v[item]
 
 
 class BoundingBox:

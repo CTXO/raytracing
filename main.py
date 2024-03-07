@@ -8,11 +8,12 @@ from structures import Vector
 origin_point = Point((0, 0, 0))
 target_point = Point((0, 0, 0.5))
 up_vector = Vector((0,1,0))
+print(target_point[2], up_vector[1])
 l = Light(Point([0,3,3]), [255,255,255])
 
 
 # c1 = Camera(origin_point, target_point, up_vector, Screen(), lights=[l])
-simple_scenario()
+# simple_scenario()
 # spheres_and_plane()
 # More realistic camera
 initial_p = Point((-300, 300, 300))
