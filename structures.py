@@ -68,3 +68,9 @@ class Vector:
 
     def __neg__(self) -> Vector:
         return Vector(self.v * -1)
+
+
+class BoundingBox:
+    def __init__(self, min_point: Point, max_point: Point):
+        self.min_point = min_point
+        self.max_point = max_point
