@@ -2,6 +2,9 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
+import colors
+
+
 class Point:
     def __init__(self, p) -> None:
         self.p = np.array(p)
@@ -77,6 +80,95 @@ class Vector:
 
 
 class BoundingBox:
+
     def __init__(self, min_point: Point, max_point: Point):
         self.min_point = min_point
         self.max_point = max_point
+        self.edges = self.compute_edges()
+        self.color = colors.GREEN
+
+    def compute_edges(self):
+        min_x, min_y, min_z = self.min_point
+        max_x, max_y, max_z = self.max_point
+
+        # Compute the 12 edges of the bounding box
+        edges = [
+            ((min_x, min_y, min_z), (max_x, min_y, min_z)),
+            ((min_x, min_y, min_z), (min_x, max_y, min_z)),
+            ((min_x, min_y, min_z), (min_x, min_y, max_z)),
+            ((max_x, min_y, min_z), (max_x, max_y, min_z)),
+            ((max_x, min_y, min_z), (max_x, min_y, max_z)),
+            ((min_x, max_y, min_z), (max_x, max_y, min_z)),
+            ((min_x, max_y, min_z), (min_x, max_y, max_z)),
+            ((max_x, max_y, min_z), (max_x, max_y, max_z)),
+            ((min_x, min_y, max_z), (max_x, min_y, max_z)),
+            ((min_x, min_y, max_z), (min_x, max_y, max_z)),
+            ((max_x, min_y, max_z), (max_x, max_y, max_z)),
+            ((min_x, max_y, max_z), (max_x, max_y, max_z))
+        ]
+        return edges
+
+    def intersect_edges(self, ray_origin, ray_direction):
+        closest_intersection = None
+        closest_distance = float('inf')
+        for edge in self.edges:
+            if self.intersect_segment(ray_origin, ray_direction, edge[0], edge[1]):
+                intersection_point = self.compute_intersection_point(ray_origin, ray_direction, edge[0], edge[1])
+                distance = self.compute_distance(ray_origin, intersection_point)
+                if distance < closest_distance:
+                    closest_intersection = edge
+                    closest_distance = distance
+
+        return closest_distance
+
+    def intersect(self, ray):
+        t = self.intersect_edges(ray.origin, ray.direction)
+        return {'t': t}
+
+    def compute_intersection_point(self, ray_origin, ray_direction, edge_start, edge_end):
+        t = ((edge_start[0] - ray_origin[0]) * (edge_end[0] - edge_start[0]) +
+             (edge_start[1] - ray_origin[1]) * (edge_end[1] - edge_start[1]) +
+             (edge_start[2] - ray_origin[2]) * (edge_end[2] - edge_start[2])) / \
+            ((ray_direction[0] * (edge_end[0] - edge_start[0])) +
+             (ray_direction[1] * (edge_end[1] - edge_start[1])) +
+             (ray_direction[2] * (edge_end[2] - edge_start[2])))
+
+        intersection_point = (ray_origin[0] + t * ray_direction[0],
+                              ray_origin[1] + t * ray_direction[1],
+                              ray_origin[2] + t * ray_direction[2])
+
+        return intersection_point
+
+    def compute_distance(self, point1, point2):
+        return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2) ** 0.5
+
+    @staticmethod
+    def intersect_segment(ray_origin, ray_direction, edge_start, edge_end) -> bool:
+
+        epsilon = 1e-3
+        e1 = edge_end[0] - edge_start[0]
+        e2 = edge_end[1] - edge_start[1]
+        e3 = edge_end[2] - edge_start[2]
+        p = ray_direction[1] * e3 - ray_direction[2] * e2
+        q = ray_direction[2] * (ray_origin[1] - edge_start[1]) - ray_direction[1] * (ray_origin[2] - edge_start[2])
+        r = e2 * (ray_origin[2] - edge_start[2]) - e3 * (ray_origin[1] - edge_start[1])
+        det = e1 * p + ray_direction[0] * (e2 * ray_direction[2] - e3 * ray_direction[1])
+
+        if det == 0:
+            return False
+
+        t = (e1 * q + ray_direction[0] * r) / det
+        if t < -epsilon or t > 1 + epsilon:
+            return False
+
+        u = (q + p * t) / det
+        if u < 0 or u > 1:
+            return False
+
+        v = (e2 * r - e3 * q) / det
+        if v < 0 or v > 1:
+            return False
+
+        return True
+
+
