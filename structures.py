@@ -1,4 +1,9 @@
 from __future__ import annotations
+
+from math import inf
+from typing import List
+from typing import Tuple
+
 import numpy as np
 import numpy.typing as npt
 
@@ -88,47 +93,75 @@ class Vector:
         return self.v[item]
 
 
-class BoundingBox:
 
+class BoundingBox:
     def __init__(self, min_point: Point, max_point: Point):
         self.min_point = min_point
         self.max_point = max_point
-        self.edges = self.compute_edges()
         self.color = colors.GREEN
 
-    def compute_edges(self):
-        min_x, min_y, min_z = self.min_point
-        max_x, max_y, max_z = self.max_point
 
-        # Compute the 12 edges of the bounding box
+    def get_corners(self) -> List[Point]:
+        corners = [
+            Point([self.min_point[0], self.min_point[1], self.min_point[2]]),
+            Point([self.min_point[0], self.min_point[1], self.max_point[2]]),
+            Point([self.min_point[0], self.max_point[1], self.min_point[2]]),
+            Point([self.min_point[0], self.max_point[1], self.max_point[2]]),
+            Point([self.max_point[0], self.min_point[1], self.min_point[2]]),
+            Point([self.max_point[0], self.min_point[1], self.max_point[2]]),
+            Point([self.max_point[0], self.max_point[1], self.min_point[2]]),
+            Point([self.max_point[0], self.max_point[1], self.max_point[2]]),
+        ]
+        return corners
+
+    def get_edges(self) -> List[Tuple[Point, Point]]:
+        corners = self.get_corners()
         edges = [
-            ((min_x, min_y, min_z), (max_x, min_y, min_z)),
-            ((min_x, min_y, min_z), (min_x, max_y, min_z)),
-            ((min_x, min_y, min_z), (min_x, min_y, max_z)),
-            ((max_x, min_y, min_z), (max_x, max_y, min_z)),
-            ((max_x, min_y, min_z), (max_x, min_y, max_z)),
-            ((min_x, max_y, min_z), (max_x, max_y, min_z)),
-            ((min_x, max_y, min_z), (min_x, max_y, max_z)),
-            ((max_x, max_y, min_z), (max_x, max_y, max_z)),
-            ((min_x, min_y, max_z), (max_x, min_y, max_z)),
-            ((min_x, min_y, max_z), (min_x, max_y, max_z)),
-            ((max_x, min_y, max_z), (max_x, max_y, max_z)),
-            ((min_x, max_y, max_z), (max_x, max_y, max_z))
+            (corners[0], corners[1]),
+            (corners[0], corners[2]),
+            (corners[0], corners[4]),
+            (corners[1], corners[3]),
+            (corners[1], corners[5]),
+            (corners[2], corners[3]),
+            (corners[2], corners[6]),
+            (corners[3], corners[7]),
+            (corners[4], corners[5]),
+            (corners[4], corners[6]),
+            (corners[5], corners[7]),
+            (corners[6], corners[7]),
         ]
         return edges
 
-    def intersect_edges(self, ray_origin, ray_direction):
-        closest_intersection = None
-        closest_distance = float('inf')
-        for edge in self.edges:
-            if self.intersect_segment(ray_origin, ray_direction, edge[0], edge[1]):
-                intersection_point = self.compute_intersection_point(ray_origin, ray_direction, edge[0], edge[1])
-                distance = self.compute_distance(ray_origin, intersection_point)
-                if distance < closest_distance:
-                    closest_intersection = edge
-                    closest_distance = distance
+    def is_point_in_edge(self, point: Point):
+        edges = self.get_edges()
+        for edge in edges:
+            xa, ya, za = edge[0].p
+            xb, yb, zb = edge[1].p
+            x, y, z = point.p
 
-        return closest_distance
+            x_diff = xb - xa
+            y_diff = yb - ya
+            z_diff = zb - za
+
+            epsilon = 0.08
+            if x_diff == 0 and y_diff == 0:
+                if not (abs(xa - x) < epsilon and abs(ya - y) < epsilon):
+                    continue
+                if min(za, zb) <= z <= max(za, zb):
+                    return True
+
+            if x_diff == 0 and z_diff == 0:
+                if not (abs(xa - x) < epsilon and abs(za - z) < epsilon):
+                    continue
+                if min(ya, yb) <= y <= max(ya, yb):
+                    return True
+
+            if y_diff == 0 and z_diff == 0:
+                if not (abs(ya - y) < epsilon and abs(za - z) < epsilon):
+                    continue
+                if min(xa, xb) <= x <= max(xa, xb):
+                    return True
+
 
     def intersect(self, ray):
         ray_inverse = 1 / ray.direction
@@ -168,5 +201,10 @@ class BoundingBox:
         if tx_min > tz_max or tz_min > tx_max:
             return {}
 
+        t = max(tx_min, ty_min, tz_min)
+        intersect_point = ray.origin.add_vector(ray.direction * t)
+        if not self.is_point_in_edge(intersect_point):
+            return {}
 
-        return {'t': max(tx_min, ty_min, tz_min)}
+
+        return {'t': t}
