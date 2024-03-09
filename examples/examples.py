@@ -6,6 +6,7 @@ from objects import Triangle
 from scene import Camera
 from scene import Light
 from scene import Screen
+from structures import BoundingBox
 from structures import Point
 from structures import Vector
 from transformations import RotationX, RotationY, RotationZ, Translation
@@ -307,6 +308,25 @@ def simple_scenario():
     c.render_from_file(load_file='./examples/scenario-3-shadow.npy')
     # c.render([sphere1, pyramid, plane, sphere2], save_file='./examples/scenario-3-shadow.npy')
 
+
+
+def bounding_box():
+    points = {
+        'origin_point': Point([-0.5, 0.5, -0.5]),
+        'target_point': Point([0, 1, 0]),
+        'up_vector': Vector([0, 1, 0]),
+    }
+
+    points_parallel = {
+        'origin_point': Point([4, 4, 0]),
+        'target_point': Point([4, 4, 0.5]),
+        'up_vector': Vector([0, 1, 0]),
+    }
+
+    c = get_camera(**points, lights=[Light(Point([0, 0, 5]))])
+    bb = BoundingBox(min_point=Point([3,3,3]), max_point=Point([5,5,5]))
+    sphere = Sphere(center=Point([0, 0, 2]), radius=1, color=colors.RED)
+    c.render([bb], save_file='./examples/bounding_box.npy')
 
 
 
