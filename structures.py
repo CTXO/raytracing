@@ -183,13 +183,13 @@ class BoundingBox:
         if max(tx_max, ty_max, tz_max) < 0:
             return {}
 
-        if ray.direction[0] == 0 and ray.origin[0] < self.min_point[0] or ray.origin[0] > self.max_point[0]:
+        if ray.direction[0] == 0 and (ray.origin[0] < self.min_point[0] or ray.origin[0] > self.max_point[0]):
             return {}
 
-        if ray.direction[1] == 0 and ray.origin[1] < self.min_point[1] or ray.origin[1] > self.max_point[1]:
+        if ray.direction[1] == 0 and (ray.origin[1] < self.min_point[1] or ray.origin[1] > self.max_point[1]):
             return {}
 
-        if ray.direction[2] == 0 and ray.origin[2] < self.min_point[2] or ray.origin[2] > self.max_point[2]:
+        if ray.direction[2] == 0 and (ray.origin[2] < self.min_point[2] or ray.origin[2] > self.max_point[2]):
             return {}
 
         if tx_min > ty_max or ty_min > tx_max:
@@ -201,10 +201,15 @@ class BoundingBox:
         if tx_min > tz_max or tz_min > tx_max:
             return {}
 
-        t = max(tx_min, ty_min, tz_min)
-        intersect_point = ray.origin.add_vector(ray.direction * t)
-        if not self.is_point_in_edge(intersect_point):
-            return {}
 
+        t1 = max(tx_min, ty_min, tz_min)
+        t2 = min(tx_max, ty_max, tz_max)
+        intersect_point1 = ray.origin.add_vector(ray.direction * t1)
+        intersect_point2 = ray.origin.add_vector(ray.direction * t2)
 
-        return {'t': t}
+        if self.is_point_in_edge(intersect_point1):
+            return {'t': t1}
+        if self.is_point_in_edge(intersect_point2):
+            return {'t': t2}
+
+        return {}
