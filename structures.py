@@ -131,53 +131,42 @@ class BoundingBox:
         return closest_distance
 
     def intersect(self, ray):
-        t = self.intersect_edges(ray.origin, ray.direction)
-        return {'t': t}
+        ray_inverse = 1 / ray.direction
 
-    def compute_intersection_point(self, ray_origin, ray_direction, edge_start, edge_end):
-        t = ((edge_start[0] - ray_origin[0]) * (edge_end[0] - edge_start[0]) +
-             (edge_start[1] - ray_origin[1]) * (edge_end[1] - edge_start[1]) +
-             (edge_start[2] - ray_origin[2]) * (edge_end[2] - edge_start[2])) / \
-            ((ray_direction[0] * (edge_end[0] - edge_start[0])) +
-             (ray_direction[1] * (edge_end[1] - edge_start[1])) +
-             (ray_direction[2] * (edge_end[2] - edge_start[2])))
+        tx_min = (self.min_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else -inf
+        tx_max = (self.max_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else inf
+        ty_min = (self.min_point[1] - ray.origin[1]) * ray_inverse[1] if ray.direction[1] != 0 else -inf
+        ty_max = (self.max_point[1] - ray.origin[1]) * ray_inverse[1] if ray.direction[1] != 0 else inf
+        tz_min = (self.min_point[2] - ray.origin[2]) * ray_inverse[2] if ray.direction[2] != 0 else -inf
+        tz_max = (self.max_point[2] - ray.origin[2]) * ray_inverse[2] if ray.direction[2] != 0 else inf
 
-        intersection_point = (ray_origin[0] + t * ray_direction[0],
-                              ray_origin[1] + t * ray_direction[1],
-                              ray_origin[2] + t * ray_direction[2])
+        if tx_min > tx_max:
+            tx_min, tx_max = tx_max, tx_min
+        if ty_min > ty_max:
+            ty_min, ty_max = ty_max, ty_min
+        if tz_min > tz_max:
+            tz_min, tz_max = tz_max, tz_min
 
-        return intersection_point
+        if max(tx_max, ty_max, tz_max) < 0:
+            return {}
 
-    def compute_distance(self, point1, point2):
-        return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2) ** 0.5
+        if ray.direction[0] == 0 and ray.origin[0] < self.min_point[0] or ray.origin[0] > self.max_point[0]:
+            return {}
 
-    @staticmethod
-    def intersect_segment(ray_origin, ray_direction, edge_start, edge_end) -> bool:
+        if ray.direction[1] == 0 and ray.origin[1] < self.min_point[1] or ray.origin[1] > self.max_point[1]:
+            return {}
 
-        epsilon = 1e-3
-        e1 = edge_end[0] - edge_start[0]
-        e2 = edge_end[1] - edge_start[1]
-        e3 = edge_end[2] - edge_start[2]
-        p = ray_direction[1] * e3 - ray_direction[2] * e2
-        q = ray_direction[2] * (ray_origin[1] - edge_start[1]) - ray_direction[1] * (ray_origin[2] - edge_start[2])
-        r = e2 * (ray_origin[2] - edge_start[2]) - e3 * (ray_origin[1] - edge_start[1])
-        det = e1 * p + ray_direction[0] * (e2 * ray_direction[2] - e3 * ray_direction[1])
+        if ray.direction[2] == 0 and ray.origin[2] < self.min_point[2] or ray.origin[2] > self.max_point[2]:
+            return {}
 
-        if det == 0:
-            return False
+        if tx_min > ty_max or ty_min > tx_max:
+            return {}
 
-        t = (e1 * q + ray_direction[0] * r) / det
-        if t < -epsilon or t > 1 + epsilon:
-            return False
+        if ty_min > tz_max or tz_min > ty_max:
+            return {}
 
-        u = (q + p * t) / det
-        if u < 0 or u > 1:
-            return False
-
-        v = (e2 * r - e3 * q) / det
-        if v < 0 or v > 1:
-            return False
-
-        return True
+        if tx_min > tz_max or tz_min > tx_max:
+            return {}
 
 
+        return {'t': max(tx_min, ty_min, tz_min)}
