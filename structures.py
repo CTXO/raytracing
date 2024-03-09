@@ -65,12 +65,21 @@ class Vector:
     def __mul__(self, other: float) -> Vector:
         new_v = self.v * other
         return Vector(new_v)
-    
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
     def __truediv__(self, other: float) -> Vector:
         return Vector(self.v / other)
 
     def __floordiv__(self, other: float) -> Vector:
         return Vector(self.v // other)
+
+    def __rtruediv__(self, other) -> Vector:
+        return Vector(other / self.v)
+
+    def __rfloordiv__(self, other):
+        return Vector(other // self.v)
 
     def __neg__(self) -> Vector:
         return Vector(self.v * -1)
