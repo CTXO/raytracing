@@ -212,7 +212,8 @@ class Camera:
                     point = chosen_intersect.get('point')
                     # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
                     #     pass
-                    color = self.calculate_color(chosen_obj, point, objs, chosen_intersect.get('triangle_id'))
+                    # color = self.calculate_color(chosen_obj, point, objs, chosen_intersect.get('triangle_id'))
+                    color = chosen_obj.color * 255
 
                 self.s.draw_pixel(p_h, p_v, color)
                 last_h = j == self.s.h_res - 1
