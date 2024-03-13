@@ -332,7 +332,7 @@ def bounding_box():
     c = get_camera(**points, lights=[Light(Point([0, 0, 5]))])
     bb = Octree(node=OctreeNode(min_point=Point([3,3,3]), max_point=Point([5,5,5])), debug=1)
     sphere = Sphere(center=Point([4,4,4]), radius=1, color=colors.RED)
-    sphere.set_coefficients(**params)
+    sphere.set_coefficients(**params, k_reflection=1)
     c.render([bb, sphere], save_file='./examples/bounding_box.npy')
 
 

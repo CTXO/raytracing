@@ -148,12 +148,14 @@ class Camera:
         result = np.clip(result, 0, 255)
         return result
 
-    def calculate_intersection(self, ray: Ray, objs, current_obj=None):
+    def calculate_intersection(self, ray: Ray, objs, current_obj=None, ignore_debug=True):
         from objects import TMesh
         min_t = float('inf')
         chosen_obj = None
         chosen_intersect = None
         for obj in objs:
+            if ignore_debug and obj.debug_object:
+                continue
             intersect = obj.intersect(ray)
             t = intersect.get('t')
             if t is not None and t < min_t and (current_obj != obj or not isinstance(current_obj, TMesh)):
@@ -205,7 +207,8 @@ class Camera:
 
                 color = np.array([0, 0, 0])  # black
                 chosen_obj = None
-                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objs)
+                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objs,
+                                                                           ignore_debug=False)
                 # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
                 #     pass
                 if chosen_obj:
