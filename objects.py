@@ -366,10 +366,43 @@ class OctreeNode:
         return {}
     
     def transform(self, transf: Transformation) -> ScreenObject:
-        raise NotImplementedError
+        self.box.min_point = transf.transform_point(self.box.min_point)
+        self.box.max_point = transf.transform_point(self.box.max_point)
+        return self
     
     def normal_of(self, point: Point, **kwargs) -> Vector:
         raise NotImplementedError
+
+
+class Octree(ScreenObject):
+    def __init__(self, node: OctreeNode, debug=0) -> None:
+        """Creates an Octree object
+
+        Args:
+            node (OctreeNode): The root node of the octree
+            debug (int, optional): Debug level. If 0, the octree will not be drawn.
+                If 1, the octree's edges will be drawn.
+                If 2, the whole octree will be drawn as a solyd.
+                Lighting will not be applied to the octree.
+        """
+
+        self.root: OctreeNode = node
+        self.color = colors.GREEN
+        self.root.color = self.color
+        self.debug_level = debug
+        self.debug_object = True
+        self.root.show_edges = self.debug_level == 1
+        self.root.debug_object = self.debug_object
+
+
+        self.root = self.root.transform(transf)
+        return self
+    
+    def normal_of(self, point: Point, **kwargs) -> Vector:
+        raise NotImplementedError
+        return self.root.normal_of(point, **kwargs)
+    def intersect(self, ray: Ray) -> dict:
+
 
 
 
