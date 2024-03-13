@@ -92,7 +92,6 @@ class Camera:
             ray_from_light = Ray(origin=light.point, direction=light_vector_inverted)
             light_object, _ = self.calculate_intersection(ray_from_light, objs)
             if light_object and light_object != obj:
-                print("shadow!!!", light_object, obj)
                 continue
 
             cos_lv_normal = Vector.dot(obj_normal, light_vector.normalize())
