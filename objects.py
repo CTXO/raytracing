@@ -11,6 +11,7 @@ from scene import Ray
 import numpy as np
 import numpy.typing as npt
 
+import colors
 from transformations import Transformation
 
 
@@ -24,6 +25,7 @@ class ScreenObject(ABC):
     shininess: float = 0
     color: npt.ArrayLike
     normal_always_positive = False
+    debug_object = False
 
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
@@ -309,7 +311,9 @@ class TMesh(ScreenObject):
         return normal
 
 
-class OctreeNode:
+class OctreeNode(ScreenObject):
+    show_edges = False
+
     def __init__(self, min_point: Point, max_point: Point):
         self.box = BoundingBox(min_point=min_point, max_point=max_point)
         self.children = []
@@ -355,15 +359,21 @@ class OctreeNode:
 
         t1 = max(tx_min, ty_min, tz_min)
         t2 = min(tx_max, ty_max, tz_max)
-        intersect_point1 = ray.origin.add_vector(ray.direction * t1)
-        intersect_point2 = ray.origin.add_vector(ray.direction * t2)
 
-        if self.box.is_point_in_edge(intersect_point1):
-            return {'t': t1}
-        if self.box.is_point_in_edge(intersect_point2):
-            return {'t': t2}
+        if not self.show_edges:
+            min_t = min(t1, t2)
+            return {'t': min_t}
 
-        return {}
+        else:
+            intersect_point1 = ray.origin.add_vector(ray.direction * t1)
+            intersect_point2 = ray.origin.add_vector(ray.direction * t2)
+
+            if self.box.is_point_in_edge(intersect_point1):
+                return {'t': t1}
+            if self.box.is_point_in_edge(intersect_point2):
+                return {'t': t2}
+
+            return {}
     
     def transform(self, transf: Transformation) -> ScreenObject:
         self.box.min_point = transf.transform_point(self.box.min_point)
@@ -395,13 +405,17 @@ class Octree(ScreenObject):
         self.root.debug_object = self.debug_object
 
 
+    def transform(self, transf: Transformation) -> ScreenObject:
         self.root = self.root.transform(transf)
         return self
     
     def normal_of(self, point: Point, **kwargs) -> Vector:
-        raise NotImplementedError
         return self.root.normal_of(point, **kwargs)
+
     def intersect(self, ray: Ray) -> dict:
+        if self.debug_level == 0:
+            return {}
+        return self.root.intersect(ray)
 
 
 

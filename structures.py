@@ -7,7 +7,6 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-import colors
 
 
 class Point:
@@ -98,7 +97,6 @@ class BoundingBox:
     def __init__(self, min_point: Point, max_point: Point):
         self.min_point = min_point
         self.max_point = max_point
-        self.color = colors.GREEN
 
 
     def get_corners(self) -> List[Point]:

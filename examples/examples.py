@@ -1,12 +1,11 @@
 import colors
-from objects import OctreeNode, Plane
+from objects import Octree, OctreeNode, Plane
 from objects import Sphere
 from objects import TMesh
 from objects import Triangle
 from scene import Camera
 from scene import Light
 from scene import Screen
-from structures import BoundingBox
 from structures import Point
 from structures import Vector
 from transformations import RotationX, RotationY, RotationZ, Translation
@@ -323,14 +322,17 @@ def bounding_box():
         'up_vector': Vector([0, 1, 0]),
     }
 
+    params = {
+        'k_diffusion': 0.6,
+        'k_ambient': 0.1,
+        'k_specular': 0.1,
+        'shininess': 10,
+    }
+
     c = get_camera(**points, lights=[Light(Point([0, 0, 5]))])
-    bb = OctreeNode(min_point=Point([3,3,3]), max_point=Point([5,5,5]))
-    sphere = Sphere(center=Point([0, 0, 2]), radius=1, color=colors.RED)
-    c.render([bb], save_file='./examples/bounding_box.npy')
-
-
-
-
-
+    bb = Octree(node=OctreeNode(min_point=Point([3,3,3]), max_point=Point([5,5,5])), debug=1)
+    sphere = Sphere(center=Point([4,4,4]), radius=1, color=colors.RED)
+    sphere.set_coefficients(**params)
+    c.render([bb, sphere], save_file='./examples/bounding_box.npy')
 
 
