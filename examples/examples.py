@@ -1,5 +1,5 @@
 import colors
-from objects import Plane
+from objects import OctreeNode, Plane
 from objects import Sphere
 from objects import TMesh
 from objects import Triangle
@@ -324,7 +324,7 @@ def bounding_box():
     }
 
     c = get_camera(**points, lights=[Light(Point([0, 0, 5]))])
-    bb = BoundingBox(min_point=Point([3,3,3]), max_point=Point([5,5,5]))
+    bb = OctreeNode(min_point=Point([3,3,3]), max_point=Point([5,5,5]))
     sphere = Sphere(center=Point([0, 0, 2]), radius=1, color=colors.RED)
     c.render([bb], save_file='./examples/bounding_box.npy')
 

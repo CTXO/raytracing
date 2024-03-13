@@ -3,8 +3,9 @@ from __future__ import annotations
 from abc import ABC
 from abc import abstractmethod
 from typing import List, Tuple
+from math import inf
 
-from structures import Vector, Point
+from structures import BoundingBox, Vector, Point
 from scene import Ray
 
 import numpy as np
@@ -34,7 +35,7 @@ class ScreenObject(ABC):
     
     @abstractmethod
     def normal_of(self, point: Point, **kwargs) -> Vector:
-        raise NotImplemented
+        raise NotImplementedError
     
     @staticmethod
     def validate_coefficient(coefficient, min_value=0, max_value=1):
@@ -306,4 +307,69 @@ class TMesh(ScreenObject):
         alpha, beta, gamma = triangle.get_baricentric_coordinates(point)
         normal = (vertices_normal[0] * alpha).add_vector(vertices_normal[1] * beta).add_vector(vertices_normal[2] * gamma)
         return normal
+
+
+class OctreeNode:
+    def __init__(self, min_point: Point, max_point: Point):
+        self.box = BoundingBox(min_point=min_point, max_point=max_point)
+        self.children = []
+
+    def intersect(self, ray: Ray) -> dict:
+        ray_inverse = 1 / ray.direction
+
+        tx_min = (self.box.min_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else -inf
+        tx_max = (self.box.max_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else inf
+        ty_min = (self.box.min_point[1] - ray.origin[1]) * ray_inverse[1] if ray.direction[1] != 0 else -inf
+        ty_max = (self.box.max_point[1] - ray.origin[1]) * ray_inverse[1] if ray.direction[1] != 0 else inf
+        tz_min = (self.box.min_point[2] - ray.origin[2]) * ray_inverse[2] if ray.direction[2] != 0 else -inf
+        tz_max = (self.box.max_point[2] - ray.origin[2]) * ray_inverse[2] if ray.direction[2] != 0 else inf
+
+        if tx_min > tx_max:
+            tx_min, tx_max = tx_max, tx_min
+        if ty_min > ty_max:
+            ty_min, ty_max = ty_max, ty_min
+        if tz_min > tz_max:
+            tz_min, tz_max = tz_max, tz_min
+
+        if max(tx_max, ty_max, tz_max) < 0:
+            return {}
+
+        if ray.direction[0] == 0 and (ray.origin[0] < self.box.min_point[0] or ray.origin[0] > self.box.max_point[0]):
+            return {}
+
+        if ray.direction[1] == 0 and (ray.origin[1] < self.box.min_point[1] or ray.origin[1] > self.box.max_point[1]):
+            return {}
+
+        if ray.direction[2] == 0 and (ray.origin[2] < self.box.min_point[2] or ray.origin[2] > self.box.max_point[2]):
+            return {}
+
+        if tx_min > ty_max or ty_min > tx_max:
+            return {}
+
+        if ty_min > tz_max or tz_min > ty_max:
+            return {}
+
+        if tx_min > tz_max or tz_min > tx_max:
+            return {}
+
+
+        t1 = max(tx_min, ty_min, tz_min)
+        t2 = min(tx_max, ty_max, tz_max)
+        intersect_point1 = ray.origin.add_vector(ray.direction * t1)
+        intersect_point2 = ray.origin.add_vector(ray.direction * t2)
+
+        if self.box.is_point_in_edge(intersect_point1):
+            return {'t': t1}
+        if self.box.is_point_in_edge(intersect_point2):
+            return {'t': t2}
+
+        return {}
+    
+    def transform(self, transf: Transformation) -> ScreenObject:
+        raise NotImplementedError
+    
+    def normal_of(self, point: Point, **kwargs) -> Vector:
+        raise NotImplementedError
+
+
 
