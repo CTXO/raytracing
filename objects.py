@@ -14,8 +14,10 @@ import numpy.typing as npt
 import colors
 from transformations import Transformation
 
+from intersectable import IntersectableMixin
 
-class ScreenObject(ABC):
+
+class ScreenObject(IntersectableMixin):
     k_diffusion: float = 0
     k_specular: float = 0
     k_ambient: float = 0
@@ -28,13 +30,6 @@ class ScreenObject(ABC):
     debug_object = False
     bounding_box: BoundingBox = None
 
-    def __init__(self) -> None:
-        self.bounding_box = self.create_bounding_box()
-
-    @abstractmethod
-    def intersect(self, ray: Ray) -> dict:
-        raise NotImplementedError
-    
     @abstractmethod
     def transform(self, transf: Transformation) -> ScreenObject:
         raise NotImplementedError
@@ -346,69 +341,13 @@ class TMesh(ScreenObject):
 
 
 
-class OctreeNode:
-    show_edges = False
-
+class OctreeNode(IntersectableMixin):
     def __init__(self, min_point: Point, max_point: Point):
         self.box = BoundingBox(min_point=min_point, max_point=max_point)
         self.children = []
 
     def intersect(self, ray: Ray) -> dict:
-        ray_inverse = 1 / ray.direction
-
-        tx_min = (self.box.min_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else -inf
-        tx_max = (self.box.max_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else inf
-        ty_min = (self.box.min_point[1] - ray.origin[1]) * ray_inverse[1] if ray.direction[1] != 0 else -inf
-        ty_max = (self.box.max_point[1] - ray.origin[1]) * ray_inverse[1] if ray.direction[1] != 0 else inf
-        tz_min = (self.box.min_point[2] - ray.origin[2]) * ray_inverse[2] if ray.direction[2] != 0 else -inf
-        tz_max = (self.box.max_point[2] - ray.origin[2]) * ray_inverse[2] if ray.direction[2] != 0 else inf
-
-        if tx_min > tx_max:
-            tx_min, tx_max = tx_max, tx_min
-        if ty_min > ty_max:
-            ty_min, ty_max = ty_max, ty_min
-        if tz_min > tz_max:
-            tz_min, tz_max = tz_max, tz_min
-
-        if max(tx_max, ty_max, tz_max) < 0:
-            return {}
-
-        if ray.direction[0] == 0 and (ray.origin[0] < self.box.min_point[0] or ray.origin[0] > self.box.max_point[0]):
-            return {}
-
-        if ray.direction[1] == 0 and (ray.origin[1] < self.box.min_point[1] or ray.origin[1] > self.box.max_point[1]):
-            return {}
-
-        if ray.direction[2] == 0 and (ray.origin[2] < self.box.min_point[2] or ray.origin[2] > self.box.max_point[2]):
-            return {}
-
-        if tx_min > ty_max or ty_min > tx_max:
-            return {}
-
-        if ty_min > tz_max or tz_min > ty_max:
-            return {}
-
-        if tx_min > tz_max or tz_min > tx_max:
-            return {}
-
-
-        t1 = max(tx_min, ty_min, tz_min)
-        t2 = min(tx_max, ty_max, tz_max)
-
-        if not self.show_edges:
-            min_t = min(t1, t2)
-            return {'t': min_t}
-
-        else:
-            intersect_point1 = ray.origin.add_vector(ray.direction * t1)
-            intersect_point2 = ray.origin.add_vector(ray.direction * t2)
-
-            if self.box.is_point_in_edge(intersect_point1):
-                return {'t': t1}
-            if self.box.is_point_in_edge(intersect_point2):
-                return {'t': t2}
-
-            return {}
+        return self.box.intersect(ray)
     
     def transform(self, transf: Transformation) -> ScreenObject:
         self.box.min_point = transf.transform_point(self.box.min_point)
@@ -419,7 +358,7 @@ class OctreeNode:
         raise NotImplementedError
 
 
-class Octree:
+class Octree(IntersectableMixin):
     def __init__(self, node: OctreeNode, debug=0) -> None:
         """Creates an Octree object
 
@@ -436,7 +375,6 @@ class Octree:
         self.root.color = self.color
         self.debug_level = debug
         self.debug_object = True
-        self.root.show_edges = self.debug_level == 1
         self.root.debug_object = self.debug_object
 
 
