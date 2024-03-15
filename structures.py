@@ -1,4 +1,9 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
+
+import colors
+if TYPE_CHECKING:
+    from scene import Ray
 
 from math import inf
 from typing import List
@@ -25,6 +30,9 @@ class Point:
 
     def __getitem__(self, item):
         return self.p[item]
+
+    def __setitem__(self, key, value):
+        self.p[key] = value
 
 
 class Vector:
@@ -92,6 +100,10 @@ class Vector:
     def __getitem__(self, item):
         return self.v[item]
 
+    def __setitem__(self, key, value):
+        self.v[key] = value
+
+
 
 
 class BoundingBox(IntersectableMixin):
@@ -99,8 +111,9 @@ class BoundingBox(IntersectableMixin):
         self.min_point = min_point
         self.max_point = max_point
         self.show_edges = True
+        self.color = colors.WHITE
 
-    def intersect(self, ray: Ray) -> float:
+    def intersect(self, ray: Ray) -> dict:
         ray_inverse = 1 / ray.direction
 
         tx_min = (self.min_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else -inf

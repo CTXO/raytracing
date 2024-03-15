@@ -29,6 +29,7 @@ class ScreenObject(IntersectableMixin):
     normal_always_positive = False
     debug_object = False
     bounding_box: BoundingBox = None
+    real_object = True
 
     @abstractmethod
     def transform(self, transf: Transformation) -> ScreenObject:
@@ -71,6 +72,7 @@ class Sphere(ScreenObject):
         self.center = center
         self.radius = radius
         self.color = color
+        self.bounding_box = self.create_bounding_box()
 
     def intersect(self, ray: Ray) -> dict:
         oc = Vector.from_points(self.center, ray.origin)
@@ -107,6 +109,7 @@ class Plane(ScreenObject):
         self.normal = normal.normalize()
         self.color = color
         self.normal_always_positive = True
+        self.bounding_box = self.create_bounding_box()
 
     def intersect(self, ray: Ray) -> dict:
         denom = Vector.dot(ray.direction, self.normal)
@@ -128,6 +131,9 @@ class Plane(ScreenObject):
 
     def normal_of(self, point: Point, **kwargs) -> Vector:
         return self.normal
+    
+    def create_bounding_box(self) -> BoundingBox:
+        return BoundingBox(min_point=Point([0,0,0]), max_point=Point([0,0,0])) # Todo
 
 
 class Triangle(ScreenObject):
@@ -147,6 +153,8 @@ class Triangle(ScreenObject):
         except:
             self.normal = self.raw_normal
         self.normal_always_positive = True
+
+        self.bounding_box = self.create_bounding_box()
 
     def area(self):
         return self.raw_normal.magnitude() / 2
@@ -268,6 +276,8 @@ class TMesh(ScreenObject):
             raise ValueError(f"Expected {self.vertex_count} vertices_normals. Found {len(vertices_normals)} instead.")
 
         self.vertices_normals = vertices_normals
+
+        self.bounding_box = self.create_bounding_box()
 
     def set_coefficients(self, k_diffusion=0, k_specular=0, k_ambient=0, k_reflection=0, k_refraction=0, n_refraction=1, shininess=0):
         super().set_coefficients(k_diffusion, k_specular, k_ambient, k_reflection, k_refraction, n_refraction, shininess)

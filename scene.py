@@ -1,7 +1,14 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from objects import ScreenObject
+    from structures import BoundingBox
+
 import time
 from math import sqrt
 from typing import List
 
+from intersectable import IntersectableMixin
 from structures import Vector, Point
 import numpy as np
 import cv2
@@ -42,7 +49,7 @@ class Camera:
 
     ambient_light = np.array([255,255,255])
     
-    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light]):
+    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light], show_bb=False):
         self.initial_p = initial_p
         self.target_p = target_p
         
@@ -62,6 +69,8 @@ class Camera:
         self.current_spot = self.target_p.add_vector(up_displacement).add_vector(right_displacement)
         
         self.lights = lights
+
+        self.show_bb = show_bb
         
     def go_horizontal(self, units=1) -> Point:
         hor_displacement = self.right_v * 2 / self.s.h_res * units
@@ -147,13 +156,14 @@ class Camera:
         result = np.clip(result, 0, 255)
         return result
 
-    def calculate_intersection(self, ray: Ray, objs, current_obj=None, ignore_debug=True):
+    def calculate_intersection(self, ray: Ray, objs: List[ScreenObject], current_obj=None, ignore_debug=True):
         from objects import TMesh
         min_t = float('inf')
         chosen_obj = None
         chosen_intersect = None
+
         for obj in objs:
-            if ignore_debug and obj.debug_object:
+            if ignore_debug and not obj.real_object:
                 continue
             intersect = obj.intersect(ray)
             t = intersect.get('t')
@@ -193,6 +203,10 @@ class Camera:
         total_iterations = self.s.h_res * self.s.v_res
         counter = 0
 
+        if self.show_bb:
+            bounding_boxes = [obj.bounding_box for obj in objs if obj.bounding_box]
+            objs.extend(bounding_boxes)
+
         for i in range(self.s.v_res):
             if go_left:
                 units = -1
@@ -206,8 +220,8 @@ class Camera:
 
                 color = np.array([0, 0, 0])  # black
                 chosen_obj = None
-                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objs,
-                                                                           ignore_debug=False)
+
+                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objs, ignore_debug=False)
                 # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
                 #     pass
                 if chosen_obj:
@@ -215,7 +229,7 @@ class Camera:
                     # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
                     #     pass
 
-                    if chosen_obj.debug_object:
+                    if not chosen_obj.real_object:
                         color = chosen_obj.color * 255
                     else:
                         color = self.calculate_color(chosen_obj, point, objs, chosen_intersect.get('triangle_id'))
