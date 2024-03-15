@@ -26,6 +26,10 @@ class ScreenObject(ABC):
     color: npt.ArrayLike
     normal_always_positive = False
     debug_object = False
+    bounding_box: BoundingBox = None
+
+    def __init__(self) -> None:
+        self.bounding_box = self.create_bounding_box()
 
     @abstractmethod
     def intersect(self, ray: Ray) -> dict:
@@ -39,6 +43,10 @@ class ScreenObject(ABC):
     def normal_of(self, point: Point, **kwargs) -> Vector:
         raise NotImplementedError
     
+    @abstractmethod
+    def create_bounding_box(self) -> BoundingBox:
+        raise NotImplementedError
+
     @staticmethod
     def validate_coefficient(coefficient, min_value=0, max_value=1):
         if min_value and coefficient < min_value:
@@ -91,6 +99,11 @@ class Sphere(ScreenObject):
 
     def normal_of(self, point: Point, **kwargs) -> Vector:
         return Vector.from_points(self.center, point)
+
+    def create_bounding_box(self) -> BoundingBox:
+        min_point = self.center.add_vector(Vector([-self.radius, -self.radius, -self.radius]))
+        max_point = self.center.add_vector(Vector([self.radius, self.radius, self.radius]))
+        return BoundingBox(min_point, max_point)
     
 
 class Plane(ScreenObject):
@@ -125,7 +138,7 @@ class Plane(ScreenObject):
 class Triangle(ScreenObject):
     def __init__(self, points: Tuple[Point, Point, Point], color: npt.ArrayLike,
                  normal: Vector = None):
-        self.points = points
+        self.points: Tuple[Point, Point, Point] = points
         self.color = np.array(color)
 
         v1 = Vector.from_points(self.points[0], self.points[1])
@@ -188,6 +201,15 @@ class Triangle(ScreenObject):
     def normal_of(self, point: Point, **kwargs) -> Vector:
         return self.normal
 
+    def create_bounding_box(self) -> BoundingBox:
+        min_point = Point([min(self.points[0][0], self.points[1][0], self.points[2][0]),
+                           min(self.points[0][1], self.points[1][1], self.points[2][1]),
+                           min(self.points[0][2], self.points[1][2], self.points[2][2])])
+        max_point = Point([max(self.points[0][0], self.points[1][0], self.points[2][0]),
+                           max(self.points[0][1], self.points[1][1], self.points[2][1]),
+                           max(self.points[0][2], self.points[1][2], self.points[2][2])])
+        return BoundingBox(min_point, max_point)
+
     def __str__(self):
         return f"""
         p1: {self.points[0]}
@@ -205,6 +227,7 @@ class TMesh(ScreenObject):
     def __init__(self, triangle_count: int, vertex_count: int, vertices: List[Point],
                  vertices_indexes: List[Tuple[int, int, int]], colors: List[npt.ArrayLike],
                  triangle_normals: List[Vector] = None, vertices_normals: List[Vector] = None):
+
         self.triangle_count = triangle_count
         self.vertex_count = vertex_count
 
@@ -310,8 +333,20 @@ class TMesh(ScreenObject):
         normal = (vertices_normal[0] * alpha).add_vector(vertices_normal[1] * beta).add_vector(vertices_normal[2] * gamma)
         return normal
 
+    def create_bounding_box(self) -> BoundingBox:
+        min_point = Point([inf, inf, inf])
+        max_point = Point([-inf, -inf, -inf])
+        for vertex in self.vertices:
+            for i in range(3):
+                if vertex[i] < min_point[i]:
+                    min_point[i] = vertex[i]
+                if vertex[i] > max_point[i]:
+                    max_point[i] = vertex[i]
+        return BoundingBox(min_point, max_point)
 
-class OctreeNode(ScreenObject):
+
+
+class OctreeNode:
     show_edges = False
 
     def __init__(self, min_point: Point, max_point: Point):
@@ -384,7 +419,7 @@ class OctreeNode(ScreenObject):
         raise NotImplementedError
 
 
-class Octree(ScreenObject):
+class Octree:
     def __init__(self, node: OctreeNode, debug=0) -> None:
         """Creates an Octree object
 
