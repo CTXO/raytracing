@@ -261,6 +261,8 @@ def pyramid():
 def simple_scenario():
     sphere1 = Sphere(Point([2,0,5]), 2, colors.RED)
     sphere2 = Sphere(Point([-2,0,5]), 2, colors.BLUE)
+    sphere3 = Sphere(Point([2,4,5]), 2, colors.BLUE)
+    sphere4 = Sphere(Point([-2,4,5]), 2, colors.RED)
     plane = Plane(Point([0,0,0]), Vector([0,1,0]), colors.GREEN)
 
     pyramid_points = [
@@ -298,14 +300,16 @@ def simple_scenario():
         'shininess': 10,
     }
 
-    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_refraction=1, n_refraction=1.5)
-    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_refraction=1, n_refraction=1.5)
+    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
+    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
+    sphere3.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
+    sphere4.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
     plane.set_coefficients(**params, k_refraction=1, n_refraction=1.5)
+
     pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_refraction=0.5, n_refraction=1.5)
 
-    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_bb=True, show_octree=True)
-    # c.render_from_file(load_file='./examples/scenario-bounding-boxes.npy')
     c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=True, res=300, screen_size=600)
+    # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
     c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-cubed.npy')
 
 
