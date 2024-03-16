@@ -354,12 +354,43 @@ class TMesh(ScreenObject):
 
 class OctreeNode(IntersectableMixin):
     def __init__(self, min_point: Point, max_point: Point):
+        self.min_point = min_point
+        self.max_point = max_point
         self.box = BoundingBox(min_point=min_point, max_point=max_point)
         self.children = []
 
+    def create_children(self):
+        mid_point = []
+        for i in range(3):
+            min_coord = self.min_point[i] +  + (self.max_point[i] - self.min_point[i]) / 2
+            mid_point.append(min_coord)
+
+        children_bounds = [
+                [self.min_point, mid_point],
+                [Point([mid_point[0], self.min_point[1], self.min_point[2]]), Point([self.max_point[0], mid_point[1], mid_point[2]])], 
+                [Point([self.min_point[0], mid_point[1], self.min_point[2]]), Point([mid_point[0], self.max_point[1], mid_point[2]])],
+                [Point([self.min_point[0], self.min_point[1], mid_point[2]]), Point([mid_point[0], mid_point[1], self.max_point[2]])],
+
+                [Point([self.min_point[0], mid_point[1], mid_point[2]]), Point([mid_point[0], self.max_point[1], self.max_point[2]])],
+                [Point([mid_point[0], self.min_point[1], mid_point[2]]), Point([self.max_point[0], mid_point[1], self.max_point[2]])],
+                [Point([mid_point[0], mid_point[1], self.min_point[2]]), Point([self.max_point[0], self.max_point[1], mid_point[2]])],
+                [mid_point, self.max_point],
+        ]
+        for child in children_bounds:
+            print("Child", child)
+
+        self.children = [OctreeNode(min_point=bound[0], max_point=bound[1]) for bound in children_bounds]
+
     def intersect(self, ray: Ray) -> dict:
-        return self.box.intersect(ray)
-    
+        min_t = float('inf')
+        for children in self.children:
+            intersect = children.box.intersect(ray)
+            t = intersect.get('t')
+            if t and t < min_t:
+                min_t = t
+        if min_t == float('inf'):
+            return {}
+        return {'t': min_t}
 
 class Octree(IntersectableMixin):
     def __init__(self, objs: List[ScreenObject]) -> None:
@@ -401,6 +432,7 @@ class Octree(IntersectableMixin):
         print(f"Octrees coords: {min_point} and {max_point}")
 
         self.root = OctreeNode(min_point, max_point)
+        self.root.create_children()
         self.color = colors.GREEN
 
     def intersect(self, ray: Ray) -> dict:

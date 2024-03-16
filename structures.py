@@ -212,7 +212,7 @@ class BoundingBox(IntersectableMixin):
             y_diff = yb - ya
             z_diff = zb - za
 
-            epsilon = 0.08
+            epsilon = 0.2
             if x_diff == 0 and y_diff == 0:
                 if not (abs(xa - x) < epsilon and abs(ya - y) < epsilon):
                     continue
