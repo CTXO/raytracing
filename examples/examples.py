@@ -35,8 +35,8 @@ points_realistic = {
 point_above_circle = Point((0, 3, 3))
 point_diagonal_to_circle = Point((0, 1, 1))
 
-def get_camera(origin_point=None, target_point=None, up_vector=None, lights=None, show_bb=False):
-    return Camera(origin_point, target_point, up_vector, Screen(), lights=lights, show_bb=show_bb)
+def get_camera(origin_point=None, target_point=None, up_vector=None, lights=None, show_bb=False, show_octree=False):
+    return Camera(origin_point, target_point, up_vector, Screen(), lights=lights, show_bb=show_bb, show_octree=show_octree)
 
 
 def sphere():
@@ -303,8 +303,8 @@ def simple_scenario():
     plane.set_coefficients(**params, k_refraction=1, n_refraction=1.5)
     pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_refraction=0.5, n_refraction=1.5)
 
-    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_bb=True)
-    # c.render_from_file(load_file='./examples/scenario-3-shadow.npy')
+    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_bb=True, show_octree=True)
+    # c.render_from_file(load_file='./examples/scenario-bounding-boxes.npy')
     c.render([sphere1, pyramid, plane, sphere2], save_file='./examples/scenario-bounding-boxes.npy')
 
 
@@ -329,10 +329,10 @@ def bounding_box():
         'shininess': 10,
     }
 
-    c = get_camera(**points, lights=[Light(Point([0, 0, 5]))], show_bb=True)
-    bb = Octree(node=OctreeNode(min_point=Point([3,3,3]), max_point=Point([5,5,5])), debug=1)
+    c = get_camera(**points, lights=[Light(Point([0, 0, 5]))], show_octree=True)
     sphere = Sphere(center=Point([4,4,4]), radius=1, color=colors.RED)
+    oct = Octree(objs=[sphere])
     sphere.set_coefficients(**params, k_reflection=1)
-    c.render([sphere], save_file='./examples/bounding_box.npy')
+    c.render([oct], save_file='./examples/octree-test.npy')
 
 

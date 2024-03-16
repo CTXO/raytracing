@@ -20,6 +20,7 @@ normal = Vector((0, 100, 0))
 
 
 simple_scenario()
+# bounding_box()
 
 # c2 = Camera(initial_p=initial_p, target_p=target_p, up_input_v=normal, scene=Screen())
 # c2.render(pyramid())

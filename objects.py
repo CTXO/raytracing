@@ -1,4 +1,7 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from scene import Ray
 
 from abc import ABC
 from abc import abstractmethod
@@ -6,7 +9,6 @@ from typing import List, Tuple
 from math import inf
 
 from structures import BoundingBox, Vector, Point
-from scene import Ray
 
 import numpy as np
 import numpy.typing as npt
@@ -350,7 +352,6 @@ class TMesh(ScreenObject):
         return BoundingBox(min_point, max_point)
 
 
-
 class OctreeNode(IntersectableMixin):
     def __init__(self, min_point: Point, max_point: Point):
         self.box = BoundingBox(min_point=min_point, max_point=max_point)
@@ -359,17 +360,9 @@ class OctreeNode(IntersectableMixin):
     def intersect(self, ray: Ray) -> dict:
         return self.box.intersect(ray)
     
-    def transform(self, transf: Transformation) -> ScreenObject:
-        self.box.min_point = transf.transform_point(self.box.min_point)
-        self.box.max_point = transf.transform_point(self.box.max_point)
-        return self
-    
-    def normal_of(self, point: Point, **kwargs) -> Vector:
-        raise NotImplementedError
-
 
 class Octree(IntersectableMixin):
-    def __init__(self, node: OctreeNode, debug=0) -> None:
+    def __init__(self, objs: List[ScreenObject]) -> None:
         """Creates an Octree object
 
         Args:
@@ -380,24 +373,24 @@ class Octree(IntersectableMixin):
                 Lighting will not be applied to the octree.
         """
 
-        self.root: OctreeNode = node
+        min_point = Point([inf, inf, inf])
+        max_point = Point([-inf, -inf, -inf])
+        objs = list(filter(lambda obj: not isinstance(obj, Plane), objs)) # remove plan objects for now
+        for obj in objs:
+            if not obj.bounding_box:
+                raise ValueError("Bounding box not found in object")
+            print(f"Obj {obj} has bounding box of {obj.bounding_box.min_point} and {obj.bounding_box.max_point}")
+            for i in range(3):
+                if obj.bounding_box.min_point[i] < min_point[i]:
+                    min_point[i] = obj.bounding_box.min_point[i]
+                if obj.bounding_box.max_point[i] > max_point[i]:
+                    max_point[i] = obj.bounding_box.max_point[i]
+            print(f"Octrees coords: {min_point} and {max_point}")
+
+        self.root = OctreeNode(min_point, max_point)
         self.color = colors.GREEN
-        self.root.color = self.color
-        self.debug_level = debug
-        self.debug_object = True
-        self.root.debug_object = self.debug_object
-
-
-    def transform(self, transf: Transformation) -> ScreenObject:
-        self.root = self.root.transform(transf)
-        return self
-    
-    def normal_of(self, point: Point, **kwargs) -> Vector:
-        return self.root.normal_of(point, **kwargs)
 
     def intersect(self, ray: Ray) -> dict:
-        if self.debug_level == 0:
-            return {}
         return self.root.intersect(ray)
 
 

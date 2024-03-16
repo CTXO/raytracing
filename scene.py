@@ -1,5 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+from objects import Octree
 if TYPE_CHECKING:
     from objects import ScreenObject
     from structures import BoundingBox
@@ -49,7 +51,7 @@ class Camera:
 
     ambient_light = np.array([255,255,255])
     
-    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light], show_bb=False):
+    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light], show_bb=False, show_octree=False):
         self.initial_p = initial_p
         self.target_p = target_p
         
@@ -71,6 +73,7 @@ class Camera:
         self.lights = lights
 
         self.show_bb = show_bb
+        self.show_octree = show_octree
         
     def go_horizontal(self, units=1) -> Point:
         hor_displacement = self.right_v * 2 / self.s.h_res * units
@@ -167,6 +170,10 @@ class Camera:
                 continue
             intersect = obj.intersect(ray)
             t = intersect.get('t')
+
+            if isinstance(obj, Octree) and t:
+                print(f'Octree intersected at {t}')
+
             if t is not None and t < min_t and (current_obj != obj or not isinstance(current_obj, TMesh)):
                 min_t = t
                 chosen_obj = obj
@@ -203,9 +210,14 @@ class Camera:
         total_iterations = self.s.h_res * self.s.v_res
         counter = 0
 
+        octree = Octree(objs)
+        if self.show_octree:
+            objs.append(octree)
+
         if self.show_bb:
-            bounding_boxes = [obj.bounding_box for obj in objs if obj.bounding_box]
+            bounding_boxes = [obj.bounding_box for obj in objs if obj.real_object and obj.bounding_box]
             objs.extend(bounding_boxes)
+
 
         for i in range(self.s.v_res):
             if go_left:
