@@ -171,9 +171,6 @@ class Camera:
             intersect = obj.intersect(ray)
             t = intersect.get('t')
 
-            if isinstance(obj, Octree) and t:
-                print(f'Octree intersected at {t}')
-
             if t is not None and t < min_t and (current_obj != obj or not isinstance(current_obj, TMesh)):
                 min_t = t
                 chosen_obj = obj
