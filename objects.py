@@ -385,7 +385,20 @@ class Octree(IntersectableMixin):
                     min_point[i] = obj.bounding_box.min_point[i]
                 if obj.bounding_box.max_point[i] > max_point[i]:
                     max_point[i] = obj.bounding_box.max_point[i]
-            print(f"Octrees coords: {min_point} and {max_point}")
+
+        x_dif = max_point[0] - min_point[0]
+        y_dif = max_point[1] - min_point[1]
+        z_dif = max_point[2] - min_point[2]
+
+        max_dif = max(x_dif, y_dif, z_dif)
+        print(f"Max dif: {max_dif}")
+
+        max_point[0] = min_point[0] + max_dif 
+        max_point[1] = min_point[1] + max_dif
+        max_point[2] = min_point[2] + max_dif
+
+
+        print(f"Octrees coords: {min_point} and {max_point}")
 
         self.root = OctreeNode(min_point, max_point)
         self.color = colors.GREEN

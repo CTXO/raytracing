@@ -305,7 +305,7 @@ def simple_scenario():
 
     c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_bb=True, show_octree=True)
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes.npy')
-    c.render([sphere1, pyramid, plane, sphere2], save_file='./examples/scenario-bounding-boxes.npy')
+    c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-cubed.npy')
 
 
 
