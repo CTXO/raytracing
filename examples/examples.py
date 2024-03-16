@@ -35,8 +35,8 @@ points_realistic = {
 point_above_circle = Point((0, 3, 3))
 point_diagonal_to_circle = Point((0, 1, 1))
 
-def get_camera(origin_point=None, target_point=None, up_vector=None, lights=None, show_bb=False, show_octree=False):
-    return Camera(origin_point, target_point, up_vector, Screen(), lights=lights, show_bb=show_bb, show_octree=show_octree)
+def get_camera(origin_point=None, target_point=None, up_vector=None, lights=None, show_bb=False, show_octree=False, res=400, screen_size=800):
+    return Camera(origin_point, target_point, up_vector, Screen(h_res=res, v_res=res, screen_size=screen_size), lights=lights, show_bb=show_bb, show_octree=show_octree)
 
 
 def sphere():
@@ -305,6 +305,7 @@ def simple_scenario():
 
     c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_bb=True, show_octree=True)
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes.npy')
+    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=True, res=300, screen_size=600)
     c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-cubed.npy')
 
 

@@ -23,16 +23,18 @@ class Ray:
 
 
 class Screen:
-    h_res = 400
-    v_res = 400
-    screen_size = 800
-    pixel_size_h = 2 / h_res
-    pixel_size_v = 2 / v_res
-    
-    real_pixel_size_h = screen_size // h_res
-    real_pixel_size_v = screen_size // v_res
-    
-    real_grid = np.zeros((screen_size, screen_size, 3), dtype=np.uint8)
+    def __init__(self, h_res=400, v_res=400, screen_size=800) -> None:
+        self.h_res = h_res
+        self.v_res = v_res
+        self.screen_size = screen_size
+
+        self.pixel_size_h = 2 / self.h_res
+        self.pixel_size_v = 2 / self.v_res
+
+        self.real_pixel_size_h = screen_size // self.h_res
+        self.real_pixel_size_v = screen_size // self.v_res
+
+        self.real_grid = np.zeros((screen_size, screen_size, 3), dtype=np.uint8)
     
     
     def draw_pixel(self, x, y, rgb):
