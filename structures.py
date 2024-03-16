@@ -22,6 +22,9 @@ class Point:
     def __str__(self):
         return f"Point({self.p[0], self.p[1], self.p[2]})"
 
+    def __repr__(self):
+        return self.__str__()
+    
     def add_vector(self, v: Vector) -> Point:
         return Point(self.p + v.v)
     
@@ -46,6 +49,9 @@ class Vector:
 
     def __str__(self):
         return f"Vector({self.v[0], self.v[1], self.v[2]})"
+
+    def __repr__(self):
+        return self.__str__()
 
     @staticmethod
     def cross(v1: Vector, v2: Vector) -> Vector:
