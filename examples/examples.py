@@ -23,6 +23,12 @@ points_octree = {
     'up_vector': Vector((0, 1, 0)),
 }
 
+points_octree_above = {
+    'origin_point': Point((0, 11, 5)),
+    'target_point': Point((0, 10, 5)),
+    'up_vector': Vector((1, 0, 0)),
+}
+
 points_close_diagonal = {
     'origin_point': Point((0, 4, 0)),
     'target_point': Point((0, 3.5, 0.5)),
@@ -315,9 +321,9 @@ def simple_scenario():
 
     pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_refraction=0.5, n_refraction=1.5)
 
-    c = get_camera(**points_octree, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=True, res=300, screen_size=600)
+    c = get_camera(**points_octree_above, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=True, res=300, screen_size=600)
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
-    c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-children.npy')
+    c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-above.npy')
     # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree.npy')
 
 

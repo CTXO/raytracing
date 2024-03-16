@@ -376,18 +376,19 @@ class OctreeNode(IntersectableMixin):
                 [Point([mid_point[0], mid_point[1], self.min_point[2]]), Point([self.max_point[0], self.max_point[1], mid_point[2]])],
                 [mid_point, self.max_point],
         ]
-        for child in children_bounds:
-            print("Child", child)
 
         self.children = [OctreeNode(min_point=bound[0], max_point=bound[1]) for bound in children_bounds]
 
     def intersect(self, ray: Ray) -> dict:
         min_t = float('inf')
-        for children in self.children:
-            intersect = children.box.intersect(ray)
-            t = intersect.get('t')
-            if t and t < min_t:
-                min_t = t
+        if self.children:
+            for children in self.children:
+                intersect = children.intersect(ray)
+                t = intersect.get('t')
+                if t and t < min_t:
+                    min_t = t
+        else:
+            return self.box.intersect(ray)
         if min_t == float('inf'):
             return {}
         return {'t': min_t}
@@ -410,7 +411,6 @@ class Octree(IntersectableMixin):
         for obj in objs:
             if not obj.bounding_box:
                 raise ValueError("Bounding box not found in object")
-            print(f"Obj {obj} has bounding box of {obj.bounding_box.min_point} and {obj.bounding_box.max_point}")
             for i in range(3):
                 if obj.bounding_box.min_point[i] < min_point[i]:
                     min_point[i] = obj.bounding_box.min_point[i]
@@ -422,17 +422,14 @@ class Octree(IntersectableMixin):
         z_dif = max_point[2] - min_point[2]
 
         max_dif = max(x_dif, y_dif, z_dif)
-        print(f"Max dif: {max_dif}")
 
         max_point[0] = min_point[0] + max_dif 
         max_point[1] = min_point[1] + max_dif
         max_point[2] = min_point[2] + max_dif
 
-
-        print(f"Octrees coords: {min_point} and {max_point}")
-
         self.root = OctreeNode(min_point, max_point)
         self.root.create_children()
+        self.root.children[0].create_children()
         self.color = colors.GREEN
 
     def intersect(self, ray: Ray) -> dict:
