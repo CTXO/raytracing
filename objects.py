@@ -358,11 +358,34 @@ class OctreeNode(IntersectableMixin):
         self.max_point = max_point
         self.box = BoundingBox(min_point=min_point, max_point=max_point)
         self.children = []
+        self.objects_inside: List[ScreenObject] = []
+
+
+    def divide_node(self, objs, min_objs, min_size, max_depth):
+        for obj in objs:
+            if self.box.intersectBB(obj.bounding_box):
+                self.objects_inside.append(obj)
+        
+        if min_objs is not None and len(self.objects_inside) <= min_objs:
+            return
+
+        if min_size is not None and self.get_node_len() < min_size:
+            return
+
+        if max_depth is not None and max_depth <= 0:
+            return
+
+        self.create_children()
+        for children in self.children:
+            children.divide_node(objs, min_objs, min_size, max_depth-1)
+        
+    def get_node_len(self):
+        return self.max_point[0] - self.min_point[0]
 
     def create_children(self):
         mid_point = []
         for i in range(3):
-            min_coord = self.min_point[i] +  + (self.max_point[i] - self.min_point[i]) / 2
+            min_coord = self.min_point[i] + (self.max_point[i] - self.min_point[i]) / 2
             mid_point.append(min_coord)
 
         children_bounds = [
@@ -394,7 +417,7 @@ class OctreeNode(IntersectableMixin):
         return {'t': min_t}
 
 class Octree(IntersectableMixin):
-    def __init__(self, objs: List[ScreenObject]) -> None:
+    def __init__(self, objs: List[ScreenObject], min_objs=1, min_size=None, max_depth=5) -> None:
         """Creates an Octree object
 
         Args:
@@ -427,14 +450,19 @@ class Octree(IntersectableMixin):
         max_point[1] = min_point[1] + max_dif
         max_point[2] = min_point[2] + max_dif
 
+        self.objs = objs
+        self.min_objs = min_objs
+        self.min_size = min_size
+        self.max_depth = max_depth
         self.root = OctreeNode(min_point, max_point)
-        self.root.create_children()
-        self.root.children[0].create_children()
         self.color = colors.GREEN
+        self.create_subnodes()
 
     def intersect(self, ray: Ray) -> dict:
         return self.root.intersect(ray)
 
+    def create_subnodes(self):
+        self.root.divide_node(self.objs, self.min_objs, self.min_size, self.max_depth)
 
 
 
