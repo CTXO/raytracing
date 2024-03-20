@@ -361,6 +361,18 @@ class OctreeNode(IntersectableMixin):
         self.objects_inside: List[ScreenObject] = []
 
 
+    def contains(self, box: BoundingBox):
+        return self.box.min_point[0] <= box.min_point[0] <= self.box.max_point[0] and \
+            self.box.min_point[1] <= box.min_point[1] <= self.box.max_point[1] and \
+            self.box.min_point[2] <= box.min_point[2] <= self.box.max_point[2] and \
+            self.box.min_point[0] <= box.max_point[0] <= self.box.max_point[0] and \
+            self.box.min_point[1] <= box.max_point[1] <= self.box.max_point[1] and \
+            self.box.min_point[2] <= box.max_point[2] <= self.box.max_point[2]
+
+    def canStoreObject(self, obj: ScreenObject):
+        return self.contains(obj.bounding_box)
+
+
     def divide_node(self, objs, min_objs, min_size, max_depth):
         for obj in objs:
             if self.box.intersectBB(obj.bounding_box):

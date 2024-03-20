@@ -18,8 +18,21 @@ initial_p = Point((-300, 300, 300))
 target_p = Point((-299, 299, 299))
 normal = Vector((0, 100, 0))
 
+p0 = Point([0,0,0])
+p1 = Point([1,1,1])
+p2 = Point([2,2,2])
+p3 = Point([3,3,3])
+p4 = Point([4,4,4])
+p5 = Point([5,5,5])
+ni = OctreeNode(min_point=p2, max_point=p4)
+no = OctreeNode(min_point=p1, max_point=p4)
+if no.contains(ni.box):
+    print('should be true')
+else:
+    print('should not be false')
 
-simple_scenario()
+
+# simple_scenario()
 # bounding_box()
 
 # c2 = Camera(initial_p=initial_p, target_p=target_p, up_input_v=normal, scene=Screen())
