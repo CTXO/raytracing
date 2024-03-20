@@ -427,6 +427,20 @@ class OctreeNode(IntersectableMixin):
         if min_t == float('inf'):
             return {}
         return {'t': min_t}
+    
+    def get_leaf_node(self, ray: Ray):
+        if not self.objects_inside:
+            return None
+
+        if not self.children:
+            return self
+
+        for child in self.children:
+            if child.box.intersect(ray):
+                if not child.objects_inside:
+                    return None
+                return child.get_leaf_node(ray)
+        return None
 
 class Octree(IntersectableMixin):
     def __init__(self, objs: List[ScreenObject], min_objs=1, min_size=None, max_depth=5) -> None:
@@ -467,6 +481,7 @@ class Octree(IntersectableMixin):
         self.min_size = min_size
         self.max_depth = max_depth
         self.root = OctreeNode(min_point, max_point)
+        self.root.objects_inside = self.objs.copy()
         self.color = colors.GREEN
         self.create_subnodes()
 

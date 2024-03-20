@@ -210,6 +210,7 @@ class Camera:
         counter = 0
 
         octree = Octree(objs)
+        current_node = octree.root
         if self.show_octree:
             objs.append(octree)
 
@@ -232,18 +233,22 @@ class Camera:
                 color = np.array([0, 0, 0])  # black
                 chosen_obj = None
 
-                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objs, ignore_debug=False)
-                # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
-                #     pass
-                if chosen_obj:
-                    point = chosen_intersect.get('point')
-                    # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
-                    #     pass
+                if current_node.box.intersect(ray, show_edges=False) and current_node.objects_inside:
+                    leaf_node = current_node.get_leaf_node(ray)
+                    if [j, i] in self.get_test_coords([129, 148], [130, 148]):
+                        pass
+                        color = np.array([1,1,1]) *255
+                    elif leaf_node:
+                        chosen_obj, chosen_intersect = self.calculate_intersection(ray, leaf_node.objects_inside, ignore_debug=False)
+                        if [j, i] in self.get_test_coords([128, 213], [129, 213]):
+                            pass
+                        if chosen_obj:
+                            point: Point = chosen_intersect.get('point')
 
-                    if not chosen_obj.real_object:
-                        color = chosen_obj.color * 255
-                    else:
-                        color = self.calculate_color(chosen_obj, point, objs, chosen_intersect.get('triangle_id'))
+                            if not chosen_obj.real_object:
+                                color = chosen_obj.color * 255
+                            else:
+                                color = self.calculate_color(chosen_obj, point, objs, chosen_intersect.get('triangle_id'))
 
                 self.s.draw_pixel(p_h, p_v, color)
                 last_h = j == self.s.h_res - 1

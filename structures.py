@@ -116,7 +116,6 @@ class BoundingBox(IntersectableMixin):
     def __init__(self, min_point: Point, max_point: Point):
         self.min_point = min_point
         self.max_point = max_point
-        self.show_edges = True
         self.color = colors.WHITE
 
     def intersectBB(self, bb: BoundingBox) -> bool:
@@ -125,7 +124,7 @@ class BoundingBox(IntersectableMixin):
                 return False
         return True
 
-    def intersect(self, ray: Ray) -> dict:
+    def intersect(self, ray: Ray, show_edges=True) -> dict:
         ray_inverse = 1 / ray.direction
 
         tx_min = (self.min_point[0] - ray.origin[0]) * ray_inverse[0] if ray.direction[0] != 0 else -inf
@@ -167,7 +166,7 @@ class BoundingBox(IntersectableMixin):
         t1 = max(tx_min, ty_min, tz_min)
         t2 = min(tx_max, ty_max, tz_max)
 
-        if not self.show_edges:
+        if not show_edges:
             min_t = min(t1, t2)
             return {'t': min_t}
 
