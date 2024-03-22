@@ -103,6 +103,12 @@ class Sphere(ScreenObject):
         min_point = self.center.add_vector(Vector([-self.radius, -self.radius, -self.radius]))
         max_point = self.center.add_vector(Vector([self.radius, self.radius, self.radius]))
         return BoundingBox(min_point, max_point)
+
+    def __str__(self):
+        return f"Sphere: center: {self.center}, radius: {self.radius}, color: {self.color}"
+
+    def __repr__(self):
+        return self.__str__()
     
 
 class Plane(ScreenObject):
@@ -372,24 +378,35 @@ class OctreeNode(IntersectableMixin):
     def canStoreObject(self, obj: ScreenObject):
         return self.contains(obj.bounding_box)
 
+    def get_or_create_children(self):
+        if not self.children:
+            self.create_children()
+        return self.children
 
-    def divide_node(self, objs, min_objs, min_size, max_depth):
-        for obj in objs:
-            if self.box.intersectBB(obj.bounding_box):
+    def get_objects_to_intersect(self, ray: Ray) -> List[ScreenObject]:
+        objects = self.objects_inside.copy()
+        if self.children:
+            for child in self.children:
+                if child.box.intersect(ray, show_edges=False):
+                    objects += child.get_objects_to_intersect(ray)
+        return objects
+
+
+    def divide_node(self, obj) -> bool:
+        if self.canStoreObject(obj):
+            children = self.get_or_create_children()
+
+            has_children_storing = False
+            for child in children:
+                has_children_storing |= child.divide_node(obj)
+            
+            if not has_children_storing:
+                # print(f"put {obj} in {self}(len: {self.get_node_len()})")
                 self.objects_inside.append(obj)
-        
-        if min_objs is not None and len(self.objects_inside) <= min_objs:
-            return
+            return True
 
-        if min_size is not None and self.get_node_len() < min_size:
-            return
-
-        if max_depth is not None and max_depth <= 0:
-            return
-
-        self.create_children()
-        for children in self.children:
-            children.divide_node(objs, min_objs, min_size, max_depth-1)
+        else:
+            return False
         
     def get_node_len(self):
         return self.max_point[0] - self.min_point[0]
@@ -423,7 +440,7 @@ class OctreeNode(IntersectableMixin):
                 if t and t < min_t:
                     min_t = t
         else:
-            return self.box.intersect(ray)
+            return self.box.intersect(ray, show_edges=False)
         if min_t == float('inf'):
             return {}
         return {'t': min_t}
@@ -481,7 +498,6 @@ class Octree(IntersectableMixin):
         self.min_size = min_size
         self.max_depth = max_depth
         self.root = OctreeNode(min_point, max_point)
-        self.root.objects_inside = self.objs.copy()
         self.color = colors.GREEN
         self.create_subnodes()
 
@@ -489,7 +505,9 @@ class Octree(IntersectableMixin):
         return self.root.intersect(ray)
 
     def create_subnodes(self):
-        self.root.divide_node(self.objs, self.min_objs, self.min_size, self.max_depth)
+        for obj in self.objs:
+            self.root.divide_node(obj)
+
 
 
 
