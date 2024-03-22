@@ -473,8 +473,13 @@ class Octree(IntersectableMixin):
 
         min_point = Point([inf, inf, inf])
         max_point = Point([-inf, -inf, -inf])
-        objs = list(filter(lambda obj: not isinstance(obj, Plane), objs)) # remove plan objects for now
+        self.root = OctreeNode(min_point, max_point)
+        # objs = list(filter(lambda obj: not isinstance(obj, Plane), objs)) # remove plan objects for now
         for obj in objs:
+            if isinstance(obj, Plane):
+                self.root.objects_inside.append(obj)
+                continue
+
             if not obj.bounding_box:
                 raise ValueError("Bounding box not found in object")
             for i in range(3):
@@ -497,7 +502,6 @@ class Octree(IntersectableMixin):
         self.min_objs = min_objs
         self.min_size = min_size
         self.max_depth = max_depth
-        self.root = OctreeNode(min_point, max_point)
         self.color = colors.GREEN
         self.create_subnodes()
 
@@ -506,7 +510,11 @@ class Octree(IntersectableMixin):
 
     def create_subnodes(self):
         for obj in self.objs:
-            self.root.divide_node(obj)
+            if isinstance(obj, TMesh):
+                for triangle in obj.triangles:
+                    self.root.divide_node(triangle)
+            else:
+                self.root.divide_node(obj)
 
 
 

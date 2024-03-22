@@ -322,11 +322,10 @@ def simple_scenario():
     pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_refraction=0.5, n_refraction=1.5)
 
     c = get_camera(**points_octree, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=False, res=300, screen_size=300)
-    o = Octree(objs=[sphere1, sphere2, sphere3, sphere4, plane, pyramid])
 
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
     # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-front.npy')
-    # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree.npy')
+    c.render([sphere1, pyramid, sphere2, plane], save_file='./examples/scenario-normal.npy')
 
 
 
@@ -374,6 +373,6 @@ def bunch_of_spheres():
         sphere.set_coefficients(k_diffusion=0.6, k_ambient=0.1, k_specular=0.1, shininess=10)
 
     # c.render_from_file(load_file='./examples/bunch_of_spheres_slow.npy')
-    c.render(spheres, save_file='./examples/bunch_of_spheres_fast.npy')
+    c.render(spheres, save_file='./examples/bunch_of_spheres_slow.npy')
 
 

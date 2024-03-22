@@ -227,13 +227,10 @@ class Camera:
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
                 objects_to_intersect = octree.root.get_objects_to_intersect(ray)
-                # print(f'Objects to intersect: {len(objects_to_intersect)}')
 
                 color = np.array([0, 0, 0])  # black
                 chosen_obj = None
                 
-                if self.show_octree and not octree in objects_to_intersect:
-                    objects_to_intersect.append(octree)
                 chosen_obj, chosen_intersect = self.calculate_intersection(ray, objects_to_intersect, ignore_debug=False)
                 # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
                     # pass
