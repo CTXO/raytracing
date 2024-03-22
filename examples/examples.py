@@ -272,9 +272,9 @@ def pyramid():
 
 
 def simple_scenario():
-    sphere1 = Sphere(Point([2,0,5]), 2, colors.RED)
-    sphere2 = Sphere(Point([-2,0,5]), 2, colors.BLUE)
-    sphere3 = Sphere(Point([2,4,5]), 2, colors.BLUE)
+    sphere1 = Sphere(Point([10,0,5]), 2, colors.RED)
+    sphere2 = Sphere(Point([-10,0,5]), 2, colors.BLUE)
+    sphere3 = Sphere(Point([-1.5,4,5]), 2, colors.BLUE)
     sphere4 = Sphere(Point([-2,4,5]), 2, colors.RED)
     plane = Plane(Point([0,0,0]), Vector([0,1,0]), colors.GREEN)
 
@@ -321,9 +321,11 @@ def simple_scenario():
 
     pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_refraction=0.5, n_refraction=1.5)
 
-    c = get_camera(**points_octree_above, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=True, res=300, screen_size=600)
+    c = get_camera(**points_octree, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=False, res=300, screen_size=300)
+    o = Octree(objs=[sphere1, sphere2, sphere3, sphere4, plane, pyramid])
+
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
-    c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-above.npy')
+    # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-front.npy')
     # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree.npy')
 
 
@@ -353,5 +355,25 @@ def bounding_box():
     oct = Octree(objs=[sphere])
     sphere.set_coefficients(**params, k_reflection=1)
     c.render([oct], save_file='./examples/octree-test.npy')
+
+
+def bunch_of_spheres():
+    c = get_camera(**points_realistic, lights=[Light(Point([0, 500, 0])), Light(Point([200, 100, 200]))], show_octree=False)
+    spheres = []
+    import random
+
+    for x in range(10):
+        for z in range(10):
+            for y in range(10):
+                if x in [0, 9] or z in [0, 9] or y == 0:
+                    base = 50
+                    spheres.append(Sphere(Point([base + x*10, y*10, base + z*10]), 5, random.choice([colors.RED])))
+            
+
+    for sphere in spheres:
+        sphere.set_coefficients(k_diffusion=0.6, k_ambient=0.1, k_specular=0.1, shininess=10)
+
+    # c.render_from_file(load_file='./examples/bunch_of_spheres_slow.npy')
+    c.render(spheres, save_file='./examples/bunch_of_spheres_fast.npy')
 
 
