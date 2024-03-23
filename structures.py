@@ -166,8 +166,11 @@ class BoundingBox(IntersectableMixin):
         t1 = max(tx_min, ty_min, tz_min)
         t2 = min(tx_max, ty_max, tz_max)
 
+        min_t = min(t1, t2)
+        if min_t < 0:
+            return {}
+
         if not show_edges:
-            min_t = min(t1, t2)
             return {'t': min_t}
 
         else:
