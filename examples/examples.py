@@ -18,9 +18,14 @@ points_close = {
     'up_vector': Vector((0, 1, 0)),
 }
 
+points_humanoid = {
+    'origin_point': Point((-1.8, 10, 9)),
+    'target_point': Point((-1.2, 9.5, 9)),
+    'up_vector': Vector((0, 0, 1)),
+}
 points_octree = {
     'origin_point': Point((0, 1.5, -5)),
-    'target_point': Point((0, 1.5, -4.5)),
+    'target_point': Point((0, 1.5, -5.5)),
     'up_vector': Vector((0, 1, 0)),
 }
 
@@ -274,8 +279,8 @@ def pyramid():
 
 
 def simple_scenario():
-    sphere1 = Sphere(Point([10,0,5]), 2, colors.RED)
-    sphere2 = Sphere(Point([-10,0,5]), 2, colors.BLUE)
+    sphere1 = Sphere(Point([3,0,5]), 3, colors.RED)
+    sphere2 = Sphere(Point([-3,0,5]), 3, colors.BLUE)
     sphere3 = Sphere(Point([-1.5,4,5]), 2, colors.BLUE)
     sphere4 = Sphere(Point([-2,4,5]), 2, colors.RED)
     plane = Plane(Point([0,0,0]), Vector([0,1,0]), colors.GREEN)
@@ -315,8 +320,8 @@ def simple_scenario():
         'shininess': 10,
     }
 
-    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
-    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
+    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1)
+    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1)
     sphere3.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
     sphere4.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
     plane.set_coefficients(**params, k_refraction=1, n_refraction=1.5)
@@ -327,8 +332,7 @@ def simple_scenario():
 
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
     # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-front.npy')
-    c.render([pyramid], save_file='./examples/debug.npy')
-
+    c.render([sphere1, sphere2, plane, pyramid], save_file='./examples/debug.npy')
 
 
 def bounding_box():
@@ -368,14 +372,14 @@ def bunch_of_spheres():
             for y in range(10):
                 if x in [0, 9] or z in [0, 9] or y == 0:
                     base = 50
-                    spheres.append(Sphere(Point([base + x*10, y*10, base + z*10]), 5, random.choice([colors.RED])))
+                    spheres.append(Sphere(Point([base + x*10, y*10, base + z*10]), 5, random.choice([colors.RED, colors.GREEN, colors.BLUE])))
             
 
     for sphere in spheres:
-        sphere.set_coefficients(k_diffusion=0.6, k_ambient=0.1, k_specular=0.1, shininess=10)
+        sphere.set_coefficients(k_diffusion=0.6, k_ambient=0.1, k_specular=0.1, shininess=10, k_reflection=0.8)
 
     # c.render_from_file(load_file='./examples/bunch_of_spheres_slow.npy')
-    c.render(spheres, save_file='./examples/bunch_of_spheres_slow.npy')
+    c.render(spheres, save_file='./examples/bunch_of_spheres_octree_reflection_right.npy')
 
 
 def create_tmesh_from_obj(obj_file_path):
@@ -385,10 +389,10 @@ def create_tmesh_from_obj(obj_file_path):
     with open(obj_file_path, 'r') as f:
         for line in f:
             if line.startswith('v '):
-                vertex = list(map(float, line.strip().split()[1:]))
+                vertex = list(map(float, line.strip().split()[1:4]))
                 vertices.append(vertex)
             elif line.startswith('f '):
-                face = [int(vertex.split('/')[0]) - 1 for vertex in line.strip().split()[1:]]
+                face = [int(vertex.split('/')[0]) - 1 for vertex in line.strip().split()[1:4]]
                 faces.append(face)
 
     # Create a list of Point objects from the vertices
@@ -416,8 +420,22 @@ def teapot():
     t_mesh = create_tmesh_from_obj('./examples/objs/teapot.obj')
     t_mesh.set_coefficients(**params)
     c = get_camera(**points_octree, lights=[Light(Point([0, 500, 0]))])
-    c.render([t_mesh], save_file='./examples/teapot.npy')
+    c.render([t_mesh], save_file='./examples/teapot_backwards.npy')
 
+    # c.render_from_file(load_file='./examples/teapot.npy')
+
+def humanoid():
+    params = {
+        'k_diffusion': 0.6,
+        'k_ambient': 0.1,
+        'k_specular': 0.1,
+        'shininess': 10,
+    }
+    t_mesh = create_tmesh_from_obj('./examples/objs/humanoid.obj')
+    t_mesh.set_coefficients(**params)
+    c = get_camera(**points_humanoid, lights=[Light(Point([0, 500, 0]))])
+    # c.render([t_mesh], save_file='./examples/humanoid.npy')
+    c.render_from_file(load_file='./examples/humanoid2.npy')
 
 
 
