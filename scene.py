@@ -95,7 +95,7 @@ class Camera:
     def get_sin_or_cos(self, sin_or_cos):
         return sqrt(1 - sin_or_cos**2)
 
-    def calculate_color(self, obj, intersect_point: Point, objs, triangle_id=None, recursion_depth=0):
+    def calculate_color(self, obj, intersect_point: Point, objs, octree, triangle_id=None, recursion_depth=0):
         recursion_limit = 3
         partial_result = np.array([0,0,0])
         reflected_vector = None
@@ -104,7 +104,8 @@ class Camera:
             light_vector = Vector.from_points(intersect_point, light.point)
             light_vector_inverted = -light_vector
             ray_from_light = Ray(origin=light.point, direction=light_vector_inverted)
-            light_object, _ = self.calculate_intersection(ray_from_light, objs)
+            objects_to_intersect = octree.root.get_objects_to_intersect(ray_from_light)
+            light_object, _ = self.calculate_intersection(ray_from_light, objects_to_intersect)
             if light_object and light_object != obj:
                 continue
 
@@ -131,11 +132,13 @@ class Camera:
         reflected_v_vector = (obj_normal * 2 * Vector.dot(obj_normal, v_vector)).add_vector(-v_vector)
         if reflected_vector and recursion_depth < recursion_limit and obj.k_reflection > 0:
             reflected_ray = Ray(origin=intersect_point, direction=reflected_v_vector)
-            chosen_obj, chosen_intersect = self.calculate_intersection(reflected_ray, objs, current_obj=obj)
+            reversed_reflected_ray = Ray(origin=intersect_point, direction=-reflected_v_vector)
+            objs_to_intersect = octree.root.get_objects_to_intersect(reversed_reflected_ray, render_all_in_root_node=True)
+            chosen_obj, chosen_intersect = self.calculate_intersection(reflected_ray, objs_to_intersect, current_obj=obj)
             if chosen_obj and chosen_obj != obj:
                 point = chosen_intersect.get('point')
                 triangle_id = chosen_intersect.get('triangle_id')
-                reflected_color = self.calculate_color(chosen_obj, point, objs, triangle_id,
+                reflected_color = self.calculate_color(chosen_obj, point, objs_to_intersect, octree, triangle_id,
                                                        recursion_depth=recursion_depth+1)
                 result = result + obj.k_reflection*reflected_color
 
@@ -147,14 +150,16 @@ class Camera:
             cos_theta_t = self.get_sin_or_cos(sin_theta_t)
             t_vector = (v_vector*(1/n)).add_vector(-obj_normal*(cos_theta_t - (1/n)*cos_theta))
             t_ray = Ray(origin=intersect_point, direction=t_vector)
-            chosen_obj, chosen_intersect = self.calculate_intersection(t_ray, objs, current_obj=obj)
+            reversed_t_ray = Ray(origin=intersect_point, direction=-t_vector)
+            objs_to_intersect = octree.root.get_objects_to_intersect(reversed_t_ray, render_all_in_root_node=True)
+            chosen_obj, chosen_intersect = self.calculate_intersection(t_ray, objs_to_intersect, current_obj=obj)
             if chosen_intersect:
                 chosen_triangle_id = chosen_intersect.get('triangle_id')
                 different_objects = chosen_obj != obj or chosen_triangle_id is not None and chosen_triangle_id != triangle_id
                 if different_objects:
                     point = chosen_intersect.get('point')
                     triangle_id = chosen_intersect.get('triangle_id')
-                    refracted_color = self.calculate_color(chosen_obj, point, objs, triangle_id,
+                    refracted_color = self.calculate_color(chosen_obj, point, objs_to_intersect, octree, triangle_id,
                                                            recursion_depth=recursion_depth+1)
                     result = result + obj.k_refraction*refracted_color
 
@@ -227,7 +232,8 @@ class Camera:
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
 
-                objects_to_intersect = octree.root.get_objects_to_intersect(ray)
+                objects_to_intersect = octree.root.get_objects_to_intersect(ray, render_all_in_root_node=True)
+                # print(f'Objects to intersect: {len(objects_to_intersect)}')
 
                 color = np.array([0, 0, 0])  # black
                 chosen_obj = None
@@ -242,8 +248,7 @@ class Camera:
                     if not chosen_obj.real_object:
                         color = chosen_obj.color * 255
                     else:
-                        color = self.calculate_color(chosen_obj, point, objects_to_intersect, chosen_intersect.get('triangle_id'))
-
+                        color = self.calculate_color(chosen_obj, point, objects_to_intersect, octree, chosen_intersect.get('triangle_id'))
                 self.s.draw_pixel(p_h, p_v, color)
                 last_h = j == self.s.h_res - 1
                 if not last_h:

@@ -143,7 +143,7 @@ class Plane(ScreenObject):
         return self.normal
 
     def create_bounding_box(self) -> BoundingBox:
-        return BoundingBox(min_point=Point([0, 0, 0]), max_point=Point([0, 0, 0]))  # Todo
+        return BoundingBox(min_point=Point([0, 0, 0]), max_point=Point([0, 0, 0]))
 
 
 class Triangle(ScreenObject):
@@ -402,8 +402,8 @@ class OctreeNode(IntersectableMixin):
             self.create_children()
         return self.children
 
-    def get_objects_to_intersect(self, ray: Ray, recursive_call=False) -> List[ScreenObject]:
-        if not recursive_call and not self.box.intersect(ray, show_edges=False):
+    def get_objects_to_intersect(self, ray: Ray, render_all_in_root_node=False) -> List[ScreenObject]:
+        if not render_all_in_root_node and not self.box.intersect(ray, show_edges=False):
             return []
 
         objects = self.objects_inside.copy()
@@ -411,7 +411,7 @@ class OctreeNode(IntersectableMixin):
         if self.children:
             for child in self.children:
                 if child.box.intersect(ray, show_edges=False):
-                    objects += child.get_objects_to_intersect(ray, recursive_call=True)
+                    objects += child.get_objects_to_intersect(ray, render_all_in_root_node=True)
         return objects
 
     def divide_node(self, obj) -> bool:
