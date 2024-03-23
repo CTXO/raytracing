@@ -146,9 +146,13 @@ class Plane(ScreenObject):
 
 class Triangle(ScreenObject):
     def __init__(self, points: Tuple[Point, Point, Point], color: npt.ArrayLike,
-                 normal: Vector = None):
+                 normal: Vector = None, vertices_normals: Tuple[Vector, Vector, Vector] = None):
+        if vertices_normals is None:
+            vertices_normals = [None, None, None]
+
         self.points: Tuple[Point, Point, Point] = points
         self.color = np.array(color)
+        self.vertices_normals = vertices_normals
 
         v1 = Vector.from_points(self.points[0], self.points[1])
         v2 = Vector.from_points(self.points[0], self.points[2])
@@ -200,7 +204,7 @@ class Triangle(ScreenObject):
         if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1:
             return {"t": plane_intersect_t, "normal": self.normal, "color": self.color, "point": point_intersect}
         return {}
-    
+
     def transform(self, transf: Transformation) -> ScreenObject:
         transformed_points = []
         for p in self.points:
@@ -210,7 +214,12 @@ class Triangle(ScreenObject):
         return self
 
     def normal_of(self, point: Point, **kwargs) -> Vector:
-        return self.normal
+        if self.vertices_normals[0] is None:
+            return self.normal
+
+        alpha, beta, gamma = self.get_baricentric_coordinates(point)
+        normal = (self.vertices_normals[0] * alpha).add_vector(self.vertices_normals[1] * beta).add_vector(self.vertices_normals[2] * gamma)
+        return normal
 
     def create_bounding_box(self) -> BoundingBox:
         min_point = Point([min(self.points[0][0], self.points[1][0], self.points[2][0]),
@@ -273,12 +282,17 @@ class TMesh(ScreenObject):
             vertices_normals = []
             for i, vertex in enumerate(self.vertices): # vertex is a point
                 vertex_normal = Vector([0, 0, 0])
+                triangles_to_add_vertex_normals = []
                 for triangle_tuple in vertices_indexes: # triangle_tuple is a tuple of 3 indexes
                     if i in triangle_tuple:
                         triangle_index = vertices_indexes.index(triangle_tuple)
                         triangle = self.triangles[triangle_index]
+                        triangles_to_add_vertex_normals.append(triangle)
                         vertex_normal = vertex_normal.add_vector(triangle.normal)
                 vertices_normals.append(vertex_normal.normalize())
+                for triangle in triangles_to_add_vertex_normals:
+                    vertex_index_in_triangle = triangle.points.index(vertex)
+                    triangle.vertices_normals[vertex_index_in_triangle] = vertex_normal.normalize()
 
         elif len(vertices_normals) != self.vertex_count:
             raise ValueError(f"Expected {self.vertex_count} vertices_normals. Found {len(vertices_normals)} instead.")
@@ -383,12 +397,16 @@ class OctreeNode(IntersectableMixin):
             self.create_children()
         return self.children
 
-    def get_objects_to_intersect(self, ray: Ray) -> List[ScreenObject]:
+    def get_objects_to_intersect(self, ray: Ray, recursive_call=False) -> List[ScreenObject]:
+        if not recursive_call and not self.box.intersect(ray, show_edges=False):
+            return []
+
         objects = self.objects_inside.copy()
+
         if self.children:
             for child in self.children:
                 if child.box.intersect(ray, show_edges=False):
-                    objects += child.get_objects_to_intersect(ray)
+                    objects += child.get_objects_to_intersect(ray, recursive_call=True)
         return objects
 
 
@@ -473,11 +491,11 @@ class Octree(IntersectableMixin):
 
         min_point = Point([inf, inf, inf])
         max_point = Point([-inf, -inf, -inf])
-        self.root = OctreeNode(min_point, max_point)
         # objs = list(filter(lambda obj: not isinstance(obj, Plane), objs)) # remove plan objects for now
+        planes = []
         for obj in objs:
             if isinstance(obj, Plane):
-                self.root.objects_inside.append(obj)
+                planes.append(obj)
                 continue
 
             if not obj.bounding_box:
@@ -487,6 +505,7 @@ class Octree(IntersectableMixin):
                     min_point[i] = obj.bounding_box.min_point[i]
                 if obj.bounding_box.max_point[i] > max_point[i]:
                     max_point[i] = obj.bounding_box.max_point[i]
+
 
         x_dif = max_point[0] - min_point[0]
         y_dif = max_point[1] - min_point[1]
@@ -498,6 +517,8 @@ class Octree(IntersectableMixin):
         max_point[1] = min_point[1] + max_dif
         max_point[2] = min_point[2] + max_dif
 
+        self.root = OctreeNode(min_point, max_point)
+        self.root.objects_inside = planes
         self.objs = objs
         self.min_objs = min_objs
         self.min_size = min_size

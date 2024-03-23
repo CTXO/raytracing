@@ -226,21 +226,23 @@ class Camera:
             for j in range(self.s.h_res):
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
+
                 objects_to_intersect = octree.root.get_objects_to_intersect(ray)
 
                 color = np.array([0, 0, 0])  # black
                 chosen_obj = None
-                
-                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objects_to_intersect, ignore_debug=False)
-                # if [j, i] in self.get_test_coords([128, 213], [129, 213]):
-                    # pass
+
+                chosen_obj, chosen_intersect = self.calculate_intersection(ray, objects_to_intersect,
+                                                                           ignore_debug=False)
+                # if [j, i] in self.get_test_coords([151, 189], [152, 189]):
+                #     pass
                 if chosen_obj:
                     point: Point = chosen_intersect.get('point')
 
                     if not chosen_obj.real_object:
                         color = chosen_obj.color * 255
                     else:
-                        color = self.calculate_color(chosen_obj, point, objs, chosen_intersect.get('triangle_id'))
+                        color = self.calculate_color(chosen_obj, point, objects_to_intersect, chosen_intersect.get('triangle_id'))
 
                 self.s.draw_pixel(p_h, p_v, color)
                 last_h = j == self.s.h_res - 1
