@@ -11,6 +11,7 @@ from structures import Vector
 from transformations import RotationX, RotationY, RotationZ, Translation
 
 
+
 points_close = {
     'origin_point': Point((0, 0, 0)),
     'target_point': Point((0, 0, 0.5)),
@@ -22,6 +23,7 @@ points_octree = {
     'target_point': Point((0, 1.5, -4.5)),
     'up_vector': Vector((0, 1, 0)),
 }
+
 
 points_octree_above = {
     'origin_point': Point((0, 11, 5)),
@@ -319,13 +321,13 @@ def simple_scenario():
     sphere4.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
     plane.set_coefficients(**params, k_refraction=1, n_refraction=1.5)
 
-    pyramid.set_coefficients(k_specular=0.7, k_diffusion=0.7, k_ambient=0.1, shininess=10, k_refraction=0.5, n_refraction=1.5)
+    pyramid.set_coefficients(**params)
 
-    c = get_camera(**points_octree, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,-5, 5]))], show_octree=False, res=300, screen_size=300)
+    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,5, 5]))], show_octree=False, res=300, screen_size=300)
 
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
     # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-front.npy')
-    c.render([sphere1, pyramid, sphere2, plane], save_file='./examples/scenario-normal.npy')
+    c.render([pyramid], save_file='./examples/debug.npy')
 
 
 
@@ -374,5 +376,48 @@ def bunch_of_spheres():
 
     # c.render_from_file(load_file='./examples/bunch_of_spheres_slow.npy')
     c.render(spheres, save_file='./examples/bunch_of_spheres_slow.npy')
+
+
+def create_tmesh_from_obj(obj_file_path):
+    # Load the mesh from the OBJ file
+    vertices = []
+    faces = []
+    with open(obj_file_path, 'r') as f:
+        for line in f:
+            if line.startswith('v '):
+                vertex = list(map(float, line.strip().split()[1:]))
+                vertices.append(vertex)
+            elif line.startswith('f '):
+                face = [int(vertex.split('/')[0]) - 1 for vertex in line.strip().split()[1:]]
+                faces.append(face)
+
+    # Create a list of Point objects from the vertices
+    points = [Point(vertex) for vertex in vertices]
+
+    # Create a list of indexes for the faces
+    indexes = [(face[0], face[1], face[2]) for face in faces]
+
+    # Assuming you have a function to get colors based on the number of vertices
+    color_list = [colors.RED for i in range(len(faces))]
+
+
+    # Create a TMesh object using the extracted data
+    t_mesh = TMesh(triangle_count=len(faces), vertex_count=len(vertices), vertices=points, vertices_indexes=indexes, colors=color_list)
+
+    return t_mesh
+
+def teapot():
+    params = {
+        'k_diffusion': 0.6,
+        'k_ambient': 0.1,
+        'k_specular': 0.1,
+        'shininess': 10,
+    }
+    t_mesh = create_tmesh_from_obj('./examples/objs/teapot.obj')
+    t_mesh.set_coefficients(**params)
+    c = get_camera(**points_octree, lights=[Light(Point([0, 500, 0]))])
+    c.render([t_mesh], save_file='./examples/teapot.npy')
+
+
 
 
