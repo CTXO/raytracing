@@ -499,7 +499,7 @@ class Octree(IntersectableMixin):
                 continue
 
             if not obj.bounding_box:
-                raise ValueError("Bounding box not found in object")
+                continue
             for i in range(3):
                 if obj.bounding_box.min_point[i] < min_point[i]:
                     min_point[i] = obj.bounding_box.min_point[i]
