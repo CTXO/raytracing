@@ -118,12 +118,6 @@ class BoundingBox(IntersectableMixin):
         self.max_point = max_point
         self.color = colors.WHITE
 
-    def intersectBB(self, bb: BoundingBox) -> bool:
-        for i in range(3):
-            if self.max_point[i] < bb.min_point[i] or self.min_point[i] > bb.max_point[i]:
-                return False
-        return True
-
     def intersect(self, ray: Ray, show_edges=True) -> dict:
         ray_inverse = 1 / ray.direction
 
