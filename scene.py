@@ -198,7 +198,7 @@ class Camera:
         return coords
 
 
-    def render(self, objs, use_octree=True, save_file=None):
+    def render(self, objs, use_octree=True, save_file=None, partial_render=False):
         start_time = time.time()
 
         full_left_iter = -self.s.h_res // 2
@@ -265,6 +265,8 @@ class Camera:
             progress = counter / total_iterations * 100
             if progress % 5 == 0:
                 print(f'Progress: {counter / total_iterations * 100:.2f}%')
+                if save_file and partial_render:
+                    np.save(save_file, self.s.real_grid)
 
         end_time = time.time()
 
