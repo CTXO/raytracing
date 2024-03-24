@@ -10,7 +10,6 @@ import time
 from math import sqrt
 from typing import List
 
-from intersectable import IntersectableMixin
 from structures import Vector, Point
 import numpy as np
 import cv2
@@ -50,10 +49,22 @@ class Light:
     
     
 class Camera:
-
     ambient_light = np.array([255,255,255])
     
     def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light], show_bb=False, show_octree=False):
+        """
+        Class that represents the camera that will render the scene.
+
+        Args:
+            initial_p: Initial position of the camera.
+            target_p: Position where the camera is looking at.
+            up_input_v: Vector that represents the up direction of the camera.
+            scene: Scene object that represents the screen where the camera will render the scene.
+            lights: List of Light objects that will illuminate the scene.
+            show_bb: If True, bounding boxes of the objects will be shown in the scene.
+            show_octree: If True, the octree will be shown in the scene.
+        """
+
         self.initial_p = initial_p
         self.target_p = target_p
         
@@ -95,7 +106,17 @@ class Camera:
     def get_sin_or_cos(self, sin_or_cos):
         return sqrt(1 - sin_or_cos**2)
 
-    def calculate_color(self, obj, intersect_point: Point, objs, octree, triangle_id=None, recursion_depth=0):
+    def calculate_color(self, obj, intersect_point: Point, octree, triangle_id=None, recursion_depth=0):
+        """ Calculates the color of the object at the intersect point using Phong's model.
+
+        Args:
+            obj: Object that was intersected.
+            intersect_point: Point where the intersection happened.
+            octree: Octree object that contains the objects in the scene.
+            triangle_id: Id of the triangle that was intersected in case the object intersected is a Mesh.
+            recursion_depth: Current recursion depth.
+        """
+
         recursion_limit = 3
         partial_result = np.array([0,0,0])
         reflected_vector = None
@@ -138,7 +159,7 @@ class Camera:
             if chosen_obj and chosen_obj != obj:
                 point = chosen_intersect.get('point')
                 triangle_id = chosen_intersect.get('triangle_id')
-                reflected_color = self.calculate_color(chosen_obj, point, objs_to_intersect, octree, triangle_id,
+                reflected_color = self.calculate_color(chosen_obj, point, octree, triangle_id,
                                                        recursion_depth=recursion_depth+1)
                 result = result + obj.k_reflection*reflected_color
 
@@ -159,7 +180,7 @@ class Camera:
                 if different_objects:
                     point = chosen_intersect.get('point')
                     triangle_id = chosen_intersect.get('triangle_id')
-                    refracted_color = self.calculate_color(chosen_obj, point, objs_to_intersect, octree, triangle_id,
+                    refracted_color = self.calculate_color(chosen_obj, point, octree, triangle_id,
                                                            recursion_depth=recursion_depth+1)
                     result = result + obj.k_refraction*refracted_color
 
@@ -199,12 +220,23 @@ class Camera:
 
 
     def render(self, objs, use_octree=True, save_file=None, partial_render=False):
+        """That traverses the pixels in the screen and calculates the color of each one.
+
+        Args:
+            objs: List of objects in the scene.
+            use_octree: If True, the octree will be used to accelerate the intersection calculations.
+            save_file: If not None, the rendered image will be saved in the file.
+            partial_render: If True, the rendered image will be saved in the file after each 5% of progress.
+        """
+
         start_time = time.time()
 
+        # Go to the left corner of the screen
         full_left_iter = -self.s.h_res // 2
         next_pos = self.go_horizontal(units=full_left_iter)
         self.set_position(next_pos)
 
+        # Go to the bottom corner of the screen
         full_down_iter = -self.s.v_res // 2
         next_pos = self.go_vertical(units=full_down_iter)
         self.set_position(next_pos)
@@ -237,19 +269,17 @@ class Camera:
                 # print(f'Objects to intersect: {len(objects_to_intersect)}')
 
                 color = np.array([0, 0, 0])  # black
-                chosen_obj = None
 
                 chosen_obj, chosen_intersect = self.calculate_intersection(ray, objects_to_intersect,
                                                                            ignore_debug=False)
-                # if [j, i] in self.get_test_coords([151, 189], [152, 189]):
-                #     pass
                 if chosen_obj:
                     point: Point = chosen_intersect.get('point')
 
                     if not chosen_obj.real_object:
                         color = chosen_obj.color * 255
                     else:
-                        color = self.calculate_color(chosen_obj, point, objects_to_intersect, octree, chosen_intersect.get('triangle_id'))
+                        color = self.calculate_color(chosen_obj, point, octree, chosen_intersect.get('triangle_id'))
+
                 self.s.draw_pixel(p_h, p_v, color)
                 last_h = j == self.s.h_res - 1
                 if not last_h:
