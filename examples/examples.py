@@ -61,8 +61,8 @@ points_realistic = {
 point_above_circle = Point((0, 3, 3))
 point_diagonal_to_circle = Point((0, 1, 1))
 
-def get_camera(origin_point=None, target_point=None, up_vector=None, lights=None, show_bb=False, show_octree=False, res=400, screen_size=800):
-    return Camera(origin_point, target_point, up_vector, Screen(h_res=res, v_res=res, screen_size=screen_size), lights=lights, show_bb=show_bb, show_octree=show_octree)
+def get_camera(origin_point=None, target_point=None, up_vector=None, lights=None, res=400, screen_size=800):
+    return Camera(origin_point, target_point, up_vector, Screen(h_res=res, v_res=res, screen_size=screen_size), lights=lights)
 
 
 def sphere():
@@ -285,10 +285,10 @@ def pyramid():
 
 
 def simple_scenario():
-    sphere1 = Sphere(Point([3,0,5]), 3, colors.RED)
-    sphere2 = Sphere(Point([-3,0,5]), 3, colors.BLUE)
-    sphere3 = Sphere(Point([-1.5,4,5]), 2, colors.BLUE)
-    sphere4 = Sphere(Point([-2,4,5]), 2, colors.RED)
+    sphere1 = Sphere(Point([3,0,10]), 3, colors.RED)
+    sphere2 = Sphere(Point([-3,0,10]), 3, colors.BLUE)
+    sphere3 = Sphere(Point([-4,2,15]), 2, colors.BLUE)
+    sphere4 = Sphere(Point([3,5,15]), 2, colors.RED)
     plane = Plane(Point([0,0,0]), Vector([0,1,0]), colors.GREEN)
 
     pyramid_points = [
@@ -326,19 +326,20 @@ def simple_scenario():
         'shininess': 10,
     }
 
-    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1)
-    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10, k_reflection=1)
+    sphere1.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
+    sphere2.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
     sphere3.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
     sphere4.set_coefficients(k_diffusion=0.8, k_specular=0.3, k_ambient=0.1, shininess=10)
     plane.set_coefficients(**params, k_refraction=1, n_refraction=1.5)
 
     pyramid.set_coefficients(**params)
 
-    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,5, 5]))], show_octree=False, res=300, screen_size=300)
+    c = get_camera(**points_close_diagonal, lights=[Light(Point([0, 5, 0])), Light(Point([0,3,6])), Light(Point([0,5, 5]))],)
 
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
     # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-front.npy')
-    c.render([sphere1, sphere2, plane, pyramid], save_file='./examples/debug.npy')
+    c.render([sphere1, sphere2, sphere3, sphere4, pyramid], save_file='./examples/simple_scene_octree.npy', partial_render=True, show_octree=True)
+    # c.render_from_file(load_file='./examples/simple_scene_octree.npy')
 
 
 def bounding_box():
@@ -361,7 +362,7 @@ def bounding_box():
         'shininess': 10,
     }
 
-    c = get_camera(**points, lights=[Light(Point([0, 0, 5]))], show_octree=True)
+    c = get_camera(**points, lights=[Light(Point([0, 0, 5]))])
     sphere = Sphere(center=Point([4,4,4]), radius=1, color=colors.RED)
     oct = Octree(objs=[sphere])
     sphere.set_coefficients(**params, k_reflection=1)
@@ -369,7 +370,7 @@ def bounding_box():
 
 
 def bunch_of_spheres():
-    c = get_camera(**points_realistic, lights=[Light(Point([0, 500, 0])), Light(Point([200, 100, 200]))], show_octree=False)
+    c = get_camera(**points_realistic, lights=[Light(Point([0, 500, 0])), Light(Point([200, 100, 200]))])
     spheres = []
     import random
 
@@ -468,6 +469,6 @@ def cow():
     t_mesh = create_tmesh_from_obj('./examples/objs/cow.obj')
     t_mesh.set_coefficients(**params)
     c = get_camera(**points_octree, lights=[Light(Point([0, 500, 0]))])
-    c.render([t_mesh], save_file='./examples/cow.npy')
+    # c.render([t_mesh], save_file='./examples/cow.npy')
 
-    # c.render_from_file(load_file='./examples/teapot.npy')
+    c.render_from_file(load_file='./examples/cow.npy')

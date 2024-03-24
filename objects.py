@@ -402,16 +402,18 @@ class OctreeNode(IntersectableMixin):
             self.create_children()
         return self.children
 
-    def get_objects_to_intersect(self, ray: Ray, render_all_in_root_node=False) -> List[ScreenObject]:
+    def get_objects_to_intersect(self, ray: Ray, render_all_in_root_node=False, show_bb=False) -> List[ScreenObject]:
         if not render_all_in_root_node and not self.box.intersect(ray, show_edges=False):
             return []
 
         objects = self.objects_inside.copy()
+        if show_bb:
+            objects.extend([obj.bounding_box for obj in self.objects_inside])
 
         if self.children:
             for child in self.children:
                 if child.box.intersect(ray, show_edges=False):
-                    objects += child.get_objects_to_intersect(ray, render_all_in_root_node=True)
+                    objects += child.get_objects_to_intersect(ray, render_all_in_root_node=True, show_bb=show_bb)
         return objects
 
     def divide_node(self, obj) -> bool:
@@ -459,16 +461,16 @@ class OctreeNode(IntersectableMixin):
 
         self.children = [OctreeNode(min_point=bound[0], max_point=bound[1]) for bound in children_bounds]
 
-    def intersect(self, ray: Ray) -> dict:
+    def intersect(self, ray: Ray, show_edges=False) -> dict:
         min_t = float('inf')
         if self.children:
             for children in self.children:
-                intersect = children.intersect(ray)
+                intersect = children.intersect(ray, show_edges=show_edges)
                 t = intersect.get('t')
                 if t and t < min_t:
                     min_t = t
         else:
-            return self.box.intersect(ray, show_edges=False)
+            return self.box.intersect(ray, show_edges=show_edges)
 
         if min_t == float('inf'):
             return {}
@@ -523,7 +525,7 @@ class Octree(IntersectableMixin):
         self.create_subnodes()
 
     def intersect(self, ray: Ray) -> dict:
-        return self.root.intersect(ray)
+        return self.root.intersect(ray, show_edges=True)
 
     def create_subnodes(self):
         if not self.active:
@@ -536,8 +538,8 @@ class Octree(IntersectableMixin):
             else:
                 self.root.divide_node(obj)
 
-    def get_objects_to_intersect(self, ray: Ray, render_all_in_root_node=False) -> List[ScreenObject]:
+    def get_objects_to_intersect(self, ray: Ray, render_all_in_root_node=False, show_bb=False) -> List[ScreenObject]:
         if not self.active:
             return self.objs
 
-        return self.root.get_objects_to_intersect(ray, render_all_in_root_node)
+        return self.root.get_objects_to_intersect(ray, render_all_in_root_node, show_bb)

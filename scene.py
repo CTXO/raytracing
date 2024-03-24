@@ -51,7 +51,7 @@ class Light:
 class Camera:
     ambient_light = np.array([255,255,255])
     
-    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light], show_bb=False, show_octree=False):
+    def __init__(self, initial_p: Point, target_p: Point, up_input_v: Vector, scene: Screen, lights: List[Light]):
         """
         Class that represents the camera that will render the scene.
 
@@ -85,9 +85,6 @@ class Camera:
         
         self.lights = lights
 
-        self.show_bb = show_bb
-        self.show_octree = show_octree
-        
     def go_horizontal(self, units=1) -> Point:
         hor_displacement = self.right_v * 2 / self.s.h_res * units
         next_spot = self.current_spot.add_vector(hor_displacement) 
@@ -219,7 +216,7 @@ class Camera:
         return coords
 
 
-    def render(self, objs, use_octree=True, save_file=None, partial_render=False):
+    def render(self, objs, use_octree=True, save_file=None, partial_render=False, show_bb=False, show_octree=False):
         """That traverses the pixels in the screen and calculates the color of each one.
 
         Args:
@@ -249,7 +246,7 @@ class Camera:
         octree = Octree(objs)
         octree.active = use_octree
 
-        if self.show_bb:
+        if show_bb:
             bounding_boxes = [obj.bounding_box for obj in objs if obj.real_object and obj.bounding_box]
             objs.extend(bounding_boxes)
 
@@ -265,8 +262,9 @@ class Camera:
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
 
-                objects_to_intersect = octree.get_objects_to_intersect(ray, render_all_in_root_node=False)
-                # print(f'Objects to intersect: {len(objects_to_intersect)}')
+                objects_to_intersect = octree.get_objects_to_intersect(ray, render_all_in_root_node=False, show_bb=show_bb)
+                if show_octree:
+                    objects_to_intersect.append(octree)
 
                 color = np.array([0, 0, 0])  # black
 
