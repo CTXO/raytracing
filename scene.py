@@ -104,7 +104,7 @@ class Camera:
             light_vector = Vector.from_points(intersect_point, light.point)
             light_vector_inverted = -light_vector
             ray_from_light = Ray(origin=light.point, direction=light_vector_inverted)
-            objects_to_intersect = octree.root.get_objects_to_intersect(ray_from_light)
+            objects_to_intersect = octree.get_objects_to_intersect(ray_from_light)
             light_object, _ = self.calculate_intersection(ray_from_light, objects_to_intersect)
             if light_object and light_object != obj:
                 continue
@@ -133,7 +133,7 @@ class Camera:
         if reflected_vector and recursion_depth < recursion_limit and obj.k_reflection > 0:
             reflected_ray = Ray(origin=intersect_point, direction=reflected_v_vector)
             reversed_reflected_ray = Ray(origin=intersect_point, direction=-reflected_v_vector)
-            objs_to_intersect = octree.root.get_objects_to_intersect(reversed_reflected_ray, render_all_in_root_node=True)
+            objs_to_intersect = octree.get_objects_to_intersect(reversed_reflected_ray, render_all_in_root_node=True)
             chosen_obj, chosen_intersect = self.calculate_intersection(reflected_ray, objs_to_intersect, current_obj=obj)
             if chosen_obj and chosen_obj != obj:
                 point = chosen_intersect.get('point')
@@ -151,7 +151,7 @@ class Camera:
             t_vector = (v_vector*(1/n)).add_vector(-obj_normal*(cos_theta_t - (1/n)*cos_theta))
             t_ray = Ray(origin=intersect_point, direction=t_vector)
             reversed_t_ray = Ray(origin=intersect_point, direction=-t_vector)
-            objs_to_intersect = octree.root.get_objects_to_intersect(reversed_t_ray, render_all_in_root_node=True)
+            objs_to_intersect = octree.get_objects_to_intersect(reversed_t_ray, render_all_in_root_node=True)
             chosen_obj, chosen_intersect = self.calculate_intersection(t_ray, objs_to_intersect, current_obj=obj)
             if chosen_intersect:
                 chosen_triangle_id = chosen_intersect.get('triangle_id')
@@ -198,7 +198,7 @@ class Camera:
         return coords
 
 
-    def render(self, objs, save_file=None):
+    def render(self, objs, use_octree=True, save_file=None):
         start_time = time.time()
 
         full_left_iter = -self.s.h_res // 2
@@ -215,6 +215,7 @@ class Camera:
         counter = 0
 
         octree = Octree(objs)
+        octree.active = use_octree
 
         if self.show_bb:
             bounding_boxes = [obj.bounding_box for obj in objs if obj.real_object and obj.bounding_box]
@@ -232,7 +233,7 @@ class Camera:
                 ray_dir = Vector.from_points(self.initial_p, self.current_spot)
                 ray = Ray(self.current_spot, ray_dir)
 
-                objects_to_intersect = octree.root.get_objects_to_intersect(ray, render_all_in_root_node=True)
+                objects_to_intersect = octree.get_objects_to_intersect(ray, render_all_in_root_node=False)
                 # print(f'Objects to intersect: {len(objects_to_intersect)}')
 
                 color = np.array([0, 0, 0])  # black

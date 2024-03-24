@@ -489,6 +489,8 @@ class OctreeNode(IntersectableMixin):
 
 
 class Octree(IntersectableMixin):
+    active = True
+
     def __init__(self, objs: List[ScreenObject], min_objs=1, min_size=None, max_depth=5) -> None:
         """Creates an Octree object
 
@@ -536,14 +538,24 @@ class Octree(IntersectableMixin):
         self.max_depth = max_depth
         self.color = colors.GREEN
         self.create_subnodes()
+        print("min_point", min_point)
+        print("max_point", max_point)
 
     def intersect(self, ray: Ray) -> dict:
         return self.root.intersect(ray)
 
     def create_subnodes(self):
+        if not self.active:
+            return
+
         for obj in self.objs:
             if isinstance(obj, TMesh):
                 for triangle in obj.triangles:
                     self.root.divide_node(triangle)
             else:
                 self.root.divide_node(obj)
+
+    def get_objects_to_intersect(self, ray: Ray, render_all_in_root_node=False) -> List[ScreenObject]:
+        if self.active:
+            return self.root.get_objects_to_intersect(ray, render_all_in_root_node)
+        return self.objs
