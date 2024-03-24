@@ -4,7 +4,9 @@ from structures import Point
 from structures import Vector
 
 
-simple_scenario()
-# bunch_of_spheres()
+# simple_scenario()
+bunch_of_spheres()
 #
 # humanoid()
+# teapot()
+# cow()
