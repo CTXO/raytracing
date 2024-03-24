@@ -521,8 +521,6 @@ class Octree(IntersectableMixin):
         self.objs = objs
         self.color = colors.GREEN
         self.create_subnodes()
-        print("min_point", min_point)
-        print("max_point", max_point)
 
     def intersect(self, ray: Ray) -> dict:
         return self.root.intersect(ray)
