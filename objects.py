@@ -491,7 +491,7 @@ class OctreeNode(IntersectableMixin):
 class Octree(IntersectableMixin):
     active = True
 
-    def __init__(self, objs: List[ScreenObject], min_objs=1, min_size=None, max_depth=5) -> None:
+    def __init__(self, objs: List[ScreenObject]) -> None:
         """Creates an Octree object
 
         Args:
@@ -529,13 +529,9 @@ class Octree(IntersectableMixin):
         max_point[1] = min_point[1] + max_dif
         max_point[2] = min_point[2] + max_dif
 
-
         self.root = OctreeNode(min_point, max_point)
         self.root.objects_inside = planes
         self.objs = objs
-        self.min_objs = min_objs
-        self.min_size = min_size
-        self.max_depth = max_depth
         self.color = colors.GREEN
         self.create_subnodes()
         print("min_point", min_point)
