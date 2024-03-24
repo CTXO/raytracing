@@ -23,12 +23,18 @@ points_humanoid = {
     'target_point': Point((-1.2, 9.5, 9)),
     'up_vector': Vector((0, 0, 1)),
 }
+
 points_octree = {
     'origin_point': Point((0, 1.5, -5)),
-    'target_point': Point((0, 1.5, -5.5)),
+    'target_point': Point((0, 1.5, -4.5)),
     'up_vector': Vector((0, 1, 0)),
 }
 
+points_teddy = {
+    'origin_point': Point((3, 0, -20)),
+    'target_point': Point((3, 0, -19.5)),
+    'up_vector': Vector((0, 1, 0)),
+}
 
 points_octree_above = {
     'origin_point': Point((0, 11, 5)),
@@ -379,7 +385,8 @@ def bunch_of_spheres():
         sphere.set_coefficients(k_diffusion=0.6, k_ambient=0.1, k_specular=0.1, shininess=10, k_reflection=0.8)
 
     # c.render_from_file(load_file='./examples/bunch_of_spheres_slow.npy')
-    c.render(spheres, save_file='./examples/bunch_of_spheres_octree_reflection_right.npy')
+    # c.render(spheres, save_file='./examples/bunch_of_spheres_octree_reflection_right.npy', use_octree=True)
+    c.render_from_file(load_file='./examples/bunch_of_spheres_octree_reflection_right.npy')
 
 
 def create_tmesh_from_obj(obj_file_path):
@@ -420,9 +427,9 @@ def teapot():
     t_mesh = create_tmesh_from_obj('./examples/objs/teapot.obj')
     t_mesh.set_coefficients(**params)
     c = get_camera(**points_octree, lights=[Light(Point([0, 500, 0]))])
-    c.render([t_mesh], save_file='./examples/teapot_backwards.npy')
+    # c.render([t_mesh], save_file='./examples/teapot_backwards.npy')
 
-    # c.render_from_file(load_file='./examples/teapot.npy')
+    c.render_from_file(load_file='./examples/teapot.npy')
 
 def humanoid():
     params = {
@@ -435,7 +442,32 @@ def humanoid():
     t_mesh.set_coefficients(**params)
     c = get_camera(**points_humanoid, lights=[Light(Point([0, 500, 0]))])
     # c.render([t_mesh], save_file='./examples/humanoid.npy')
-    c.render_from_file(load_file='./examples/humanoid2.npy')
+    c.render_from_file(load_file='./examples/humanoid.npy')
 
+def teddy():
+    params = {
+        'k_diffusion': 0.8,
+        'k_ambient': 0.1,
+        'k_specular': 0.1,
+        'shininess': 1,
+   }
+    t_mesh = create_tmesh_from_obj('./examples/objs/teddy.obj')
+    t_mesh.set_coefficients(**params)
+    c = get_camera(**points_teddy, lights=[Light(Point([0, 500, 0]))])
+    c.render([t_mesh], save_file='./examples/teddy.npy')
 
+    # c.render_from_file(load_file='./examples/teapot.npy'
 
+def cow():
+    params = {
+        'k_diffusion': 0.8,
+        'k_ambient': 0.1,
+        'k_specular': 0.1,
+        'shininess': 1,
+   }
+    t_mesh = create_tmesh_from_obj('./examples/objs/cow.obj')
+    t_mesh.set_coefficients(**params)
+    c = get_camera(**points_octree, lights=[Light(Point([0, 500, 0]))])
+    c.render([t_mesh], save_file='./examples/cow.npy')
+
+    # c.render_from_file(load_file='./examples/teapot.npy')
