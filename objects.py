@@ -394,7 +394,7 @@ class OctreeNode(IntersectableMixin):
             self.box.min_point[1] <= box.max_point[1] <= self.box.max_point[1] and \
             self.box.min_point[2] <= box.max_point[2] <= self.box.max_point[2]
 
-    def canStoreObject(self, obj: ScreenObject):
+    def can_store_object(self, obj: ScreenObject):
         return self.contains(obj.bounding_box)
 
     def get_or_create_children(self):
@@ -415,7 +415,7 @@ class OctreeNode(IntersectableMixin):
         return objects
 
     def divide_node(self, obj) -> bool:
-        if self.canStoreObject(obj):
+        if self.can_store_object(obj):
             children = self.get_or_create_children()
 
             has_children_storing = False
@@ -442,7 +442,7 @@ class OctreeNode(IntersectableMixin):
         children_bounds = [
             [self.min_point, mid_point],
             [Point([mid_point[0], self.min_point[1], self.min_point[2]]),
-            Point([self.max_point[0], mid_point[1], mid_point[2]])],
+             Point([self.max_point[0], mid_point[1], mid_point[2]])],
             [Point([self.min_point[0], mid_point[1], self.min_point[2]]),
              Point([mid_point[0], self.max_point[1], mid_point[2]])],
             [Point([self.min_point[0], self.min_point[1], mid_point[2]]),
@@ -469,23 +469,10 @@ class OctreeNode(IntersectableMixin):
                     min_t = t
         else:
             return self.box.intersect(ray, show_edges=False)
+
         if min_t == float('inf'):
             return {}
         return {'t': min_t}
-
-    def get_leaf_node(self, ray: Ray):
-        if not self.objects_inside:
-            return None
-
-        if not self.children:
-            return self
-
-        for child in self.children:
-            if child.box.intersect(ray):
-                if not child.objects_inside:
-                    return None
-                return child.get_leaf_node(ray)
-        return None
 
 
 class Octree(IntersectableMixin):
@@ -552,6 +539,7 @@ class Octree(IntersectableMixin):
                 self.root.divide_node(obj)
 
     def get_objects_to_intersect(self, ray: Ray, render_all_in_root_node=False) -> List[ScreenObject]:
-        if self.active:
-            return self.root.get_objects_to_intersect(ray, render_all_in_root_node)
-        return self.objs
+        if not self.active:
+            return self.objs
+
+        return self.root.get_objects_to_intersect(ray, render_all_in_root_node)
