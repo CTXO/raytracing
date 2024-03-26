@@ -224,6 +224,8 @@ class Camera:
             use_octree: If True, the octree will be used to accelerate the intersection calculations.
             save_file: If not None, the rendered image will be saved in the file.
             partial_render: If True, the rendered image will be saved in the file after each 5% of progress.
+            show_bb: If True, bounding boxes of the objects will be shown in the scene.
+            show_octree: If True, the octree will be shown in the scene.
         """
 
         start_time = time.time()
