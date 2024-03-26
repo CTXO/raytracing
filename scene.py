@@ -122,7 +122,7 @@ class Camera:
             light_vector = Vector.from_points(intersect_point, light.point)
             light_vector_inverted = -light_vector
             ray_from_light = Ray(origin=light.point, direction=light_vector_inverted)
-            objects_to_intersect = octree.get_objects_to_intersect(ray_from_light)
+            objects_to_intersect = octree.get_objects_to_intersect(ray_from_light, render_all_in_root_node=True)
             light_object, _ = self.calculate_intersection(ray_from_light, objects_to_intersect)
             if light_object and light_object != obj:
                 continue
