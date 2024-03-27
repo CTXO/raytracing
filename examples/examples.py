@@ -31,8 +31,8 @@ points_octree = {
 }
 
 points_teddy = {
-    'origin_point': Point((3, 0, -20)),
-    'target_point': Point((3, 0, -19.5)),
+    'origin_point': Point((3, 0, 40)),
+    'target_point': Point((3, 0, 39.5)),
     'up_vector': Vector((0, 1, 0)),
 }
 
@@ -338,7 +338,7 @@ def simple_scenario():
 
     # c.render_from_file(load_file='./examples/scenario-bounding-boxes-cubed.npy')
     # c.render([sphere1, pyramid, sphere2], save_file='./examples/scenario-bounding-boxes-octree-recursive-front.npy')
-    c.render([sphere1, sphere2, sphere3, sphere4, pyramid], save_file='./examples/simple_scene_octree.npy', partial_render=True, show_octree=True)
+    c.render([sphere1, sphere2, pyramid, plane], save_file='./examples/simple_scene_plane_full.npy')
     # c.render_from_file(load_file='./examples/simple_scene_octree.npy')
 
 
@@ -454,10 +454,9 @@ def teddy():
    }
     t_mesh = create_tmesh_from_obj('./examples/objs/teddy.obj')
     t_mesh.set_coefficients(**params)
-    c = get_camera(**points_teddy, lights=[Light(Point([0, 500, 0]))])
-    c.render([t_mesh], save_file='./examples/teddy.npy')
-
-    # c.render_from_file(load_file='./examples/teapot.npy'
+    c = get_camera(**points_teddy, lights=[Light(Point([0, 500, 0])), Light(Point([3,10,40]))])
+    c.render([t_mesh], save_file='./examples/teddy_front.npy', partial_render=False)
+    # c.render_from_file(load_file='./examples/teddy_front.npy')
 
 def cow():
     params = {
@@ -468,7 +467,6 @@ def cow():
    }
     t_mesh = create_tmesh_from_obj('./examples/objs/cow.obj')
     t_mesh.set_coefficients(**params)
-    c = get_camera(**points_octree, lights=[Light(Point([0, 500, 0]))])
-    # c.render([t_mesh], save_file='./examples/cow.npy')
-
+    c = get_camera(**points_octree, lights=[Light(Point([0, 500, 0])), Light(Point([0,3,-5]))])
+    # c.render([t_mesh], save_file='./examples/cow', partial_render=False)
     c.render_from_file(load_file='./examples/cow.npy')
